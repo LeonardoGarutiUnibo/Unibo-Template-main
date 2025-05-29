@@ -11,14 +11,38 @@
 }
 @section styles{
     @RenderSection("styles", false)
+    <style>
+        .sidebar {
+    width: 250px;
+    background: #0073e6;
+    color: white;
+    padding: 20px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+}
+
+.sidebar a {
+            display: block;
+            color: white;
+            text-decoration: none;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            transition: 0.3s;
+        }
+
+.sidebar a:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+    </style>
 }
 <div id="pageId" class="onit-page">
     <div class="onit-page-sticky-top" id="onit-page-sticky-top">
         <nav class="navbar navbar-expand-lg navbar-dark onit-page-menu">
             <div class="container-fluid">
-                <a class="navbar-brand" href="/">
-                    <img class="onit-suites-logo" src="~/images/app-logo.png" />
-                </a>
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
                     <i class="fa-solid fa-bars"></i>
                 </button>
@@ -42,6 +66,17 @@
                 </div>
             </div>
         </nav>
+        <div class="sidebar">
+            <a class="navbar-brand" style="display: flex; justify-content: center;" href="/">
+                <img class="onit-suites-logo" src="~/images/app-logo.png" />
+            </a>
+            <h2 style="display: flex; justify-content: center; margin-top: 30px;">Dashboard</h2>
+            <a asp-area="Example" asp-controller="Users" asp-action="Index" style="display: flex; justify-content: center;">Gestione utenti</a>
+            <a asp-area="Example" asp-controller="Teams" asp-action="Index" style="display: flex; justify-content: center;">Gestione team</a>
+            <a asp-area="Example" asp-controller="Timesheets" asp-action="Index" style="display: flex; justify-content: center;">Gestione time</a>
+            <a href="#" style="display: flex; justify-content: center;">Le mie richieste</a>
+            <a href="#" style="display: flex; justify-content: center;">Gestione Richieste</a>
+        </div>
         @RenderSection("pageTitle", false)
     </div>
     @RenderSection("pageSubtitle", false)

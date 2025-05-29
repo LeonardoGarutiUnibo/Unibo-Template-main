@@ -113,6 +113,11 @@ namespace Template.Web
                 endpoints.MapHub<TemplateHub>("/templateHub");
 
                 endpoints.MapAreaControllerRoute("Example", "Example", "Example/{controller=Users}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "Timesheets", "Example/{controller=Timesheets}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "Users", "Example/{controller=Users}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "Teams", "Example/{controller=Teams}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "Example", "Example/{controller=TeamsMembers}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "AbsenceEvents", "Example/{controller=AbsenceEvents}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute("default", "{controller=Login}/{action=Login}");
             });
         }
