@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestione Utenti</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            text-align: center;
+        }
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background: #0073e6;
+            color: white;
+        }
+        .actions {
+            display: flex;
+            justify-content: space-around;
+        }
+        button {
+            background: #0073e6;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .add-user {
+            margin: 15px 0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 20%;
+            left: 50%;
+            transform: translate(-50%, -20%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        .modal.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="container">
+        <h1>Gestione Utenti</h1>
+        <input type="text" v-model="searchQuery" placeholder="Ricerca utente...">
+        <button v-on:click="showAddUserModal">Aggiungi Utente</button>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Email</th>
+                    <th>Team</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="(user, index) in filteredUsers" :key="index">
+                    <td>{{ user.nome }}</td>
+                    <td>{{ user.cognome }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>{{ user.team }}</td>
+                    <td class="actions">
+                        <button v-on:click="editUser(index)">Modifica</button>
+                        <button v-on:click="deleteUser(index)">Elimina</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <!-- Maschera di inserimento utente -->
+        <div class="modal" :class="{ active: isModalOpen }">
+            <h2>Aggiungi Utente</h2>
+            <input type="text" v-model="newUser.nome" placeholder="Nome">
+            <input type="text" v-model="newUser.cognome" placeholder="Cognome">
+            <input type="email" v-model="newUser.email" placeholder="Email">
+            <input type="text" v-model="newUser.team" placeholder="Team">
+            <button v-on:click="addUser">Salva</button>
+            <button v-on:click="closeModal">Chiudi</button>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+            data() {
+                return {
+                    searchQuery: '',
+                    isModalOpen: false
+                };
+            },
+            computed: {
+                filteredTimesheets() {
+                    return this.users.filter(user => 
+                        user.nome.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        user.cognome.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        user.email.toLowerCase().includes(this.searchQuery.toLowerCase()) ||
+                        user.team.toLowerCase().includes(this.searchQuery.toLowerCase())
+                    );
+                }
+            },
+            methods: {
+                showAddTimesheetModal() {
+                    this.isModalOpen = true;
+                },
+                closeModal() {
+                    this.isModalOpen = false;
+                },
+                addTimesheet() {
+                },
+                editTimesheet(index) {
+                },
+                deleteTimesheet(index) {
+                }
+            }
+        }).mount("#app");
+    </script>
+</body>
+</html>

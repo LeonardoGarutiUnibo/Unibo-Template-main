@@ -16,7 +16,7 @@ namespace Template.Services.Shared
 
     public partial class SharedService
     {
-        public async Task<Guid> Handle(AddOrUpdateUserCommand cmd)
+        public async Task<Guid> HandleUser(AddOrUpdateUserCommand cmd)
         {
             var user = await _dbContext.Users
                 .Where(x => x.Id == cmd.Id)

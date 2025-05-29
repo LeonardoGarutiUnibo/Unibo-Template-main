@@ -42,6 +42,23 @@ namespace Template.Infrastructure
                     LastName = "Cognome3",
                     NickName = "Nickname3"
                 });
+            
+            context.AbsenceEvents.AddRange();
+            context.Timesheets.AddRange();
+            context.TeamMembers.AddRange(
+
+            );
+            context.Teams.AddRange(
+                new Team
+                {
+                    Id = Guid.Parse("d1f8c5b0-2f3e-4c9a-8b6e-7f3c1b2d3e4f"), // Forced to specific Guid for tests
+                    Name = "Team A",
+                },
+                new Team
+                {
+                    Id = Guid.Parse("e2f8c5b0-2f3e-4c9a-8b6e-7f3c1b2d3e4f"), // Forced to specific Guid for tests
+                    Name = "Team B",
+                });
 
             context.SaveChanges();
         }

@@ -16,5 +16,9 @@ namespace Template.Services
         }
 
         public DbSet<User> Users { get; set; }
+        public DbSet<AbsenceEvent> AbsenceEvents { get; set; } // Nome al plurale consigliato
+        public DbSet<Timesheet> Timesheets { get; set; }
+        public DbSet<TeamMember> TeamMembers { get; set; }
+        public DbSet<Team> Teams { get; set; }
     }
 }
