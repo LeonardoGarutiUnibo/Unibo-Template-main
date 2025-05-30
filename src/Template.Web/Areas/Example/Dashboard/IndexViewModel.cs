@@ -9,11 +9,19 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Template.Web.Areas.Example.Dashboard
 {
-    public class IndexViewModel
+    public class UserIndexViewModel
     {
-        public int NumeroUtentiAttivi { get; set; }
-        public int OrdiniRecenti { get; set; }
         public string MessaggioBenvenuto { get; set; }
-        // Aggiungi altre proprietà necessarie
+
+        // Aggiungi la lista di utenti
+        public List<UserViewModel> Users { get; set; } = new List<UserViewModel>();
     }
+
+    public class UserViewModel
+    {
+        public Guid Id { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+    }
+    
 }

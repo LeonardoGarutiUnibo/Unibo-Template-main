@@ -144,24 +144,24 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr v-for="(employee, index) in employees" :key="index">
-                            <td>{{ employee }}</td>
-                            <td v-for="day in daysInMonth" :key="day" v-on:click="openPopup(employee, day)" class="status">
-                                <span :class="statusClasses[schedule[employee][day] || '']">
-                                    {{ statusIcons[schedule[employee][day] || ''] }}
+                        <tr v-for="(user, index) in users" :key="index">
+                            <td>{{ user }}</td> <!-- qui user è semplicemente il nome -->
+                            <td v-for="day in daysInMonth" :key="day" class="status" v-on:click="openPopup(user, day)">
+                                <span :class="statusClasses[schedule[user]?.[day] || '']">
+                                    {{ statusIcons[schedule[user]?.[day] || ''] }}
                                 </span>
                             </td>
                         </tr>
                     </tbody>
                 </table>
             </div>
-            <div class="legenda">
+        </div>
+         <div class="legenda"></div>
                 <div class="intera">● Giornata intera</div>
                 <div class="mezza">◐ Mezza giornata</div>
                 <div class="smartworking">🏠 Smart Working</div>
                 <div class="assente">✖ Assente</div>
             </div>
-        </div>
 
         <div v-if="showPopup" class="modal active">
             <h3>Seleziona stato per {{ popupEmployee }} - Giorno {{ popupDay }}</h3>
@@ -185,7 +185,7 @@
     data() {
         return {
             selectedMonth: new Date().toISOString().slice(0, 7),
-            employees: [],
+            users: [],  // nome uniforme
             daysInMonth: [],
             schedule: {},
             statusIcons: { "": "", "intera": "●", "mezza": "◐", "assente": "✖", "smartworking": "🏠" },
@@ -199,11 +199,11 @@
     methods: {
         async fetchData() {
             try {
-                let response = await fetch('/api/timesheets'); // Simuliamo un'API
+                let response = await fetch('/api/timesheets'); // API simulata
                 let data = await response.json();
-                this.employees = data.map(ts => ts.Name); // Otteniamo i nomi dei dipendenti
+                this.users = data.map(ts => ts.Name);
                 this.schedule = data.reduce((acc, ts) => {
-                    acc[ts.Name] = ts.WeekDays; // Ogni dipendente ha il suo stato giornaliero
+                    acc[ts.Name] = ts.WeekDays;
                     return acc;
                 }, {});
             } catch (error) {
@@ -213,22 +213,28 @@
         generateCalendar() {
             let [year, monthNum] = this.selectedMonth.split('-');
             let daysCount = new Date(year, monthNum, 0).getDate();
-            this.daysInMonth = Array.from({ length: daysCount }, (_, i) => `${i + 1}`);
+            this.daysInMonth = Array.from({ length: daysCount }, (_, i) => (i + 1).toString());
         },
         openPopup(employee, day) {
             this.popupEmployee = employee;
             this.popupDay = day;
+            this.selectedStatus = this.schedule[employee]?.[day] || "";
             this.showPopup = true;
         },
         closePopup() {
             this.showPopup = false;
         },
         saveStatus() {
+            if (!this.schedule[this.popupEmployee]) {
+                this.schedule[this.popupEmployee] = {};
+            }
             this.schedule[this.popupEmployee][this.popupDay] = this.selectedStatus;
             this.closePopup();
         },
         deleteStatus() {
-            this.schedule[this.popupEmployee][this.popupDay] = "";
+            if (this.schedule[this.popupEmployee]) {
+                this.schedule[this.popupEmployee][this.popupDay] = "";
+            }
             this.closePopup();
         }
     },

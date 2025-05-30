@@ -1,27 +1,43 @@
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Localization;
-using System;
-using System.Threading.Tasks;
-using Template.Services.Shared;
 using Template.Web.Infrastructure;
-using Template.Web.SignalR;
-using Template.Web.SignalR.Hubs.Events;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using Template.Services.Shared;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Threading.Tasks;
 
 namespace Template.Web.Areas.Example.Dashboard
 {
-        [Area("Example")]
+    [Area("Example")]
     public partial class DashboardController : AuthenticatedBaseController
     {
-        // costruttore e altri membri...
+        private readonly SharedService _sharedService;
 
+        public DashboardController(SharedService sharedService)
+        {
+            _sharedService = sharedService;
+        }
+
+        [HttpGet]
         public virtual async Task<IActionResult> Index()
         {
-            var model = new IndexViewModel
+            var users = await _sharedService.Query(new UsersIndexQuery());
+
+            var model = new UserIndexViewModel
             {
-                MessaggioBenvenuto = "Benvenuto nella tua dashboard!"
+                MessaggioBenvenuto = "Benvenuto nella tua dashboard!",
+                Users = users.Users.Select(u => new UserViewModel
+                {
+                    Id = u.Id,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName
+                }).ToList()
             };
 
             return View(model);
         }
+        
     }
 }
