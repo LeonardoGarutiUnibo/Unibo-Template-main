@@ -1,1 +1,55 @@
 Definizione db :  src/template/services/_templateDbContext.cs
+
+
+Timesheets
+
+        [Key]
+        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        public Guid Id { get; set; }
+
+        public string WeekDay { get; set; }
+        public string Name { get; set; }
+
+
+AbsenceEvents
+
+        public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        [ForeignKey("UserId")]
+        public User User { get; set; }
+        public string RequestDate { get; set; }
+        public string StartEventDate { get; set; }
+
+        public string EndDateEvent { get; set; }
+        public string EventType { get; set; }
+        public string EventState { get; set; }
+
+
+Users
+
+        public Guid Id { get; set; }
+
+        public string Email { get; set; }	V
+        public string Password { get; set; }	V
+
+        public string FirstName { get; set; }	V
+        public string LastName { get; set; }	V
+        public string NickName { get; set; }	V
+
+        public string Role { get; set; } // e.g., Admin, User
+
+        public Guid TimesheetId { get; set;}
+        public Guid? TeamId { get; set;}
+
+TeamMember
+
+        public Guid Id { get; set; }
+
+        public Guid TeamId { get; set; }
+        [ForeignKey("TeamId")]
+        public Team Team { get; set; }
+        public Guid UserId { get; set; }
+        [ForeignKey("UserId")]
+        public User User { get; set; }
+
+        public bool IsManager { get; set; }

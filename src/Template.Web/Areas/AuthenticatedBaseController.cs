@@ -29,29 +29,37 @@ namespace Template.Web.Areas
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             try
-            {
-                if (context.HttpContext != null && context.HttpContext.User != null && context.HttpContext.User.Identity.IsAuthenticated)
-                {
-                    ViewData[IdentitaViewModel.VIEWDATA_IDENTITACORRENTE_KEY] = new IdentitaViewModel
-                    {
-                        EmailUtenteCorrente = context.HttpContext.User.Claims.Where(x => x.Type == ClaimTypes.Email).First().Value
-                    };
-                }
-                else
-                {
-                    HttpContext.SignOutAsync();
-                    this.SignOut();
+    {
+        if (context.HttpContext != null && context.HttpContext.User != null && context.HttpContext.User.Identity.IsAuthenticated)
+        {
+            var emailClaim = context.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
+            var roleClaim = context.HttpContext.User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Role || x.Type == "role");
 
-                    context.Result = new RedirectResult(context.HttpContext.Request.GetEncodedUrl());
-                    Alerts.AddError(this, "L'utente non possiede i diritti per visualizzare la risorsa richiesta");
-                }
-
-                base.OnActionExecuting(context);
-            }
-            catch (Exception)
+            foreach (var claim in context.HttpContext.User.Claims)
+{
+    Console.WriteLine($"{claim.Type} = {claim.Value}");
+}
+            ViewData[IdentitaViewModel.VIEWDATA_IDENTITACORRENTE_KEY] = new IdentitaViewModel
             {
-                throw;
-            }
+                EmailUtenteCorrente = emailClaim?.Value,
+                Role = roleClaim?.Value
+            };
+        }
+        else
+        {
+            HttpContext.SignOutAsync();
+            this.SignOut();
+
+            context.Result = new RedirectResult(context.HttpContext.Request.GetEncodedUrl());
+            Alerts.AddError(this, "L'utente non possiede i diritti per visualizzare la risorsa richiesta");
+        }
+
+        base.OnActionExecuting(context);
+    }
+    catch (Exception)
+    {
+        throw;
+    }
         }
     }
 }

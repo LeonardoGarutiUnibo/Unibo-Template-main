@@ -22,6 +22,7 @@ namespace Template.Services.Shared
         {
             public Guid Id { get; set; }
             public string Email { get; set; }
+            public string Role { get; set; }
         }
     }
 
@@ -44,6 +45,10 @@ namespace Template.Services.Shared
             public string Email { get; set; }
             public string FirstName { get; set; }
             public string LastName { get; set; }
+            public string NickName { get; set; }
+            public string Role { get; set; }
+            public Guid TeamId { get; set; }
+            public Guid TimesheetId { get; set; }
         }
     }
 
@@ -59,6 +64,9 @@ namespace Template.Services.Shared
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public string NickName { get; set; }
+        public string Role { get; set; }
+        public Guid TeamId { get; set; }
+        public Guid TimesheetId { get; set; }
     }
 
     public class CheckLoginCredentialsQuery
@@ -90,7 +98,8 @@ namespace Template.Services.Shared
                 .Select(x => new UsersSelectDTO.User
                 {
                     Id = x.Id,
-                    Email = x.Email
+                    Email = x.Email,
+                    Role =  x.Role
                 })
                 .ToArrayAsync(),
                 Count = await queryable.CountAsync(),
@@ -120,6 +129,7 @@ namespace Template.Services.Shared
                     {
                         Id = x.Id,
                         Email = x.Email,
+                        Role = x.Role,
                         FirstName = x.FirstName,
                         LastName = x.LastName
                     })
@@ -141,9 +151,11 @@ namespace Template.Services.Shared
                 {
                     Id = x.Id,
                     Email = x.Email,
+                    Role = x.Role,
                     FirstName = x.FirstName,
                     LastName = x.LastName,
                     NickName = x.NickName
+
                 })
                 .FirstOrDefaultAsync();
         }
@@ -167,6 +179,7 @@ namespace Template.Services.Shared
             {
                 Id = user.Id,
                 Email = user.Email,
+                Role =  user.Role,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
                 NickName = user.NickName

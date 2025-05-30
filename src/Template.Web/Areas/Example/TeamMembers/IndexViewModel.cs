@@ -67,8 +67,8 @@ namespace Template.Web.Areas.Example.TeamMembers
 
 
         public Guid Id { get; set; }
-        public string TeamId { get; set; }
-        public string UserId { get; set; }
+        public Guid TeamId { get; set; }
+        public Guid UserId { get; set; }
         public bool IsManager { get; set; }
     }
 }

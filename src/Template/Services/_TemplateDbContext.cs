@@ -13,6 +13,10 @@ namespace Template.Services
         public TemplateDbContext(DbContextOptions<TemplateDbContext> options) : base(options)
         {
             DataGenerator.InitializeUsers(this);
+            DataGenerator.InitializeAbsenceEvents(this);
+            DataGenerator.InitializeTimesheets(this);
+            DataGenerator.InitializeTeamMembers(this);
+            DataGenerator.InitializeTeams(this);
         }
 
         public DbSet<User> Users { get; set; }

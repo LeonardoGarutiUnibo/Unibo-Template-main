@@ -13,6 +13,8 @@ namespace Template.Services.Shared
         public Guid Id { get; set; }
 
         public Guid TeamId { get; set; }
+        [ForeignKey("TeamId")]
+        public Team Team { get; set; }
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }

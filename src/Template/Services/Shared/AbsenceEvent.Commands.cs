@@ -9,7 +9,7 @@ namespace Template.Services.Shared
     {
         public Guid? Id { get; set; }
         
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public string RequestDate { get; set; }
         public string StartEventDate { get; set; }
 

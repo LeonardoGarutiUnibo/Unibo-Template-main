@@ -1,7 +1,7 @@
 declare module Example.AbsenceEvents.Server {
 	interface editViewModel {
 		id?: any;
-		UserId: string;
+		UserId: any;
 		RequestDate: string;
 		StartEventDate : string; 
         EndDateEvent : string; 

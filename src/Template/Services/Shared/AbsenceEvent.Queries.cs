@@ -20,6 +20,7 @@ namespace Template.Services.Shared
 //Da sistemare
         public class AbsenceEvent{
             public Guid Id { get; set; }
+            public Guid UserId { get; set; }
             public string RequestDate { get; set; }
             public string StartEventDate { get; set; }
             public string EndDateEvent { get; set; }
@@ -44,7 +45,7 @@ namespace Template.Services.Shared
         public class AbsenceEvent
         {
             public Guid Id { get; set; }
-            public string UserId { get; set; }
+            public Guid UserId { get; set; }
             public string RequestDate { get; set; }
             public string StartEventDate { get; set; }
             public string EndDateEvent { get; set; }
@@ -61,7 +62,7 @@ namespace Template.Services.Shared
 
     public class AbsenceEventDetailDTO {
         public Guid Id { get; set; }
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         public string RequestDate { get; set; }
         public string StartEventDate { get; set; }
         public string EndDateEvent { get; set; }

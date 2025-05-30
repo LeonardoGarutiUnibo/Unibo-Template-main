@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Presenze</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f4f4;
+            margin: 0;
+            padding: 0;
+            text-align: center;
+        }
+
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            width: calc(100% - 270px);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: auto;
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: center;
+        }
+
+        th {
+            background: #0073e6;
+            color: white;
+        }
+
+        td:first-child {
+            font-weight: bold;
+            background: #e3f2fd;
+        }
+
+        .status {
+            cursor: pointer;
+            font-size: 22px;
+            transition: 0.3s;
+        }
+
+        .status:hover {
+            transform: scale(1.2);
+        }
+
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal select, .modal button {
+            margin: 10px 0;
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        .intera { background: #28a745; color: white; }
+        .mezza { background: #ffc107; color: black; }
+        .assente { background: #dc3545; color: white; }
+        .smartworking { background: #17a2b8; color: white; }
+
+        .table-wrapper {
+            overflow-x: auto;
+            max-width: 100%;
+        }
+        /*Da controllare se funziona*/
+        th:first-child, tr:first-child {
+            position: sticky;
+            left: 0;
+            background: #f9f9f9;
+            z-index: 0;
+            padding-left: 1px;
+        }
+        th:first-child, td:first-child {
+            position: sticky;
+            left: 0;
+            background: #f9f9f9;
+            z-index: 0;
+            padding-left: 1px;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="app" class="main-content">
+        <div class="container">
+            <h1>Gestione Presenze e Smart Working</h1>
+            <label for="month">Seleziona mese:</label> 
+            <input type="month" v-model="selectedMonth" v-on:change="generateCalendar">
+            <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th style="color:black">Dipendente</th>
+                        <th v-for="day in daysInMonth" :key="day">{{ day }}</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="(user, index) in myUser" :key="index">
+                        <td>{{ employee }}</td>
+                        <td v-for="day in daysInMonth" :key="day" class="status">
+                            <span :class="statusClasses[schedule[user][day] || '']">
+                                {{ statusIcons[schedule[user][day] || ''] }}
+                            </span>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="color:black">Dipendente</th>
+                            <th v-for="day in daysInMonth" :key="day">{{ day }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(employee, index) in employees" :key="index">
+                            <td>{{ employee }}</td>
+                            <td v-for="day in daysInMonth" :key="day" v-on:click="openPopup(employee, day)" class="status">
+                                <span :class="statusClasses[schedule[employee][day] || '']">
+                                    {{ statusIcons[schedule[employee][day] || ''] }}
+                                </span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="legenda">
+                <div class="intera">● Giornata intera</div>
+                <div class="mezza">◐ Mezza giornata</div>
+                <div class="smartworking">🏠 Smart Working</div>
+                <div class="assente">✖ Assente</div>
+            </div>
+        </div>
+
+        <div v-if="showPopup" class="modal active">
+            <h3>Seleziona stato per {{ popupEmployee }} - Giorno {{ popupDay }}</h3>
+            <select v-model="selectedStatus">
+                <option value="">-- Scegli --</option>
+                <option value="intera">Giornata intera</option>
+                <option value="mezza">Mezza giornata</option>
+                <option value="assente">Assente</option>
+                <option value="smartworking">Smart Working</option>
+            </select>
+            <button v-on:click="saveStatus">Salva</button>
+            <button v-on:click="deleteStatus">Elimina richiesta</button>
+            <button v-on:click="closePopup">Annulla</button>
+        </div>
+    </div>
+
+    <script>
+        const { createApp } = Vue;
+
+        createApp({
+    data() {
+        return {
+            selectedMonth: new Date().toISOString().slice(0, 7),
+            employees: [],
+            daysInMonth: [],
+            schedule: {},
+            statusIcons: { "": "", "intera": "●", "mezza": "◐", "assente": "✖", "smartworking": "🏠" },
+            statusClasses: { "": "", "intera": "intera", "mezza": "mezza", "assente": "assente", "smartworking": "smartworking" },
+            showPopup: false,
+            popupEmployee: "",
+            popupDay: "",
+            selectedStatus: ""
+        };
+    },
+    methods: {
+        async fetchData() {
+            try {
+                let response = await fetch('/api/timesheets'); // Simuliamo un'API
+                let data = await response.json();
+                this.employees = data.map(ts => ts.Name); // Otteniamo i nomi dei dipendenti
+                this.schedule = data.reduce((acc, ts) => {
+                    acc[ts.Name] = ts.WeekDays; // Ogni dipendente ha il suo stato giornaliero
+                    return acc;
+                }, {});
+            } catch (error) {
+                console.error("Errore nel caricamento dei dati", error);
+            }
+        },
+        generateCalendar() {
+            let [year, monthNum] = this.selectedMonth.split('-');
+            let daysCount = new Date(year, monthNum, 0).getDate();
+            this.daysInMonth = Array.from({ length: daysCount }, (_, i) => `${i + 1}`);
+        },
+        openPopup(employee, day) {
+            this.popupEmployee = employee;
+            this.popupDay = day;
+            this.showPopup = true;
+        },
+        closePopup() {
+            this.showPopup = false;
+        },
+        saveStatus() {
+            this.schedule[this.popupEmployee][this.popupDay] = this.selectedStatus;
+            this.closePopup();
+        },
+        deleteStatus() {
+            this.schedule[this.popupEmployee][this.popupDay] = "";
+            this.closePopup();
+        }
+    },
+    mounted() {
+        this.fetchData();
+        this.generateCalendar();
+    }
+}).mount("#app");
+    </script>
+</body>
+</html>

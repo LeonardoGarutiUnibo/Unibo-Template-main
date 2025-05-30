@@ -2,8 +2,8 @@ declare module Example.TeamMembers.Server {
 	interface editViewModel {
 		id?: any;
 		name: string;
-		teamId : string; 
-        userId : string; 
+		teamId : any; 
+        userId : any; 
         isManager : boolean;
 	}
 }

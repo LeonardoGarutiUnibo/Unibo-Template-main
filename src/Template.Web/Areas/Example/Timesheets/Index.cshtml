@@ -1,0 +1,139 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Gestione Timesheet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .fixed-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: none;
+            z-index: 999;
+        }
+
+        .form-container {
+            text-align: center;
+        }
+
+        .fixed-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4" style="padding-left: 200px;">
+        <h2>Gestione Timesheet</h2>
+        <div class="mb-3">
+            <button class="btn btn-primary">Nome timesheet</button>
+            <button class="btn btn-secondary">Ricerca</button>
+            <button class="btn btn-success" onclick="showTimesheetForm()">+ Nuovo Timesheet</button>
+        </div>
+        <div id="timesheetForm" class="fixed-overlay">
+            <div class="form-container">
+                <h3>Crea Timesheet</h3>
+                <form>
+                    <div class="mb-3">
+                        <label class="form-label">Nome Timesheet</label>
+                        <input type="text" class="form-control" id="timesheetName">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Giorni Settimanali</label>
+                        <div id="daysCheckboxContainer">
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Lunedì"> Lunedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Martedì"> Martedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Mercoledì"> Mercoledì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Giovedì"> Giovedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Venerdì"> Venerdì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Sabato"> Sabato</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Domenica"> Domenica</div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="saveTimesheet()">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideTimesheetForm()">Chiudi</button>
+                </form>
+            </div>
+        </div>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Nome timesheet</th>
+                    <th>Giorni timesheet</th>
+                    <th>Delete timesheet</th>
+                    <th>Edit timesheet</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var timesheet in Model.Timesheets)
+                {
+                    <tr>
+                        <td>@timesheet.Id</td>
+                        <td>@timesheet.Name</td>
+                        <td>@string.Join("-", timesheet.WeekDay)</td>
+                        <td>
+                            <button class="btn btn-danger" onclick="deleteTimesheet('@timesheet.Id')">
+                                🗑️
+                            </button>
+                        </td>
+                        <td>
+                            <button class="btn btn-warning" onclick="editTimesheet('@timesheet.Id')">
+                                ✏️
+                            </button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>
+
+<script>
+    function deleteTimesheet(id) {
+        alert("Eliminato timesheet ID: " + id);
+    }
+
+    function editTimesheet(id) {
+        alert("Modifica timesheet ID: " + id);
+    }
+    function showTimesheetForm() {
+        document.getElementById("timesheetForm").classList.add("active");
+    }
+
+    function hideTimesheetForm() {
+        document.getElementById("timesheetForm").classList.remove("active");
+    }
+
+    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+const selectedDays = [];
+
+function showTimesheetForm() {
+    document.getElementById("timesheetForm").classList.add("active");
+}
+
+function hideTimesheetForm() {
+    document.getElementById("timesheetForm").classList.remove("active");
+}
+
+function saveTimesheet() {
+    let name = document.getElementById("timesheetName").value;
+    let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
+    let days = Array.from(checkboxes).map(cb => cb.value);
+
+    if (name && days.length > 0) {
+        alert(`Timesheet creato!\nNome: ${name}\nGiorni: ${days.join(", ")}`);
+        hideTimesheetForm();
+        // Qui puoi inviare i dati al backend con fetch()
+    } else {
+        alert("Compila tutti i campi!");
+    }
+}
+</script>

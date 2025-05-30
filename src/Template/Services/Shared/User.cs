@@ -19,10 +19,14 @@ namespace Template.Services.Shared
         public string LastName { get; set; }
         public string NickName { get; set; }
 
-        public Guid TeamId { get; set; }
-        public Guid TimesheetId { get; set; }
+        public string Role { get; set; } // e.g., Admin, User
 
-        public string Role { get; set; } // e.g., Admin, User, Manager
+        public Guid TimesheetId { get; set;}
+        [ForeignKey("TimesheetId")]
+        public Timesheet Timesheet { get; set;}
+        public Guid? TeamId { get; set;}
+        [ForeignKey("TeamId")]
+        public Team Team { get; set;}
 
         /// <summary>
         /// Checks if password passed as parameter matches with the Password of the current user

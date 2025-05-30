@@ -66,17 +66,20 @@
                 </div>
             </div>
         </nav>
-        <div class="sidebar">
-            <a class="navbar-brand" style="display: flex; justify-content: center;" href="/">
-                <img class="onit-suites-logo" src="~/images/app-logo.png" />
-            </a>
-            <h2 style="display: flex; justify-content: center; margin-top: 30px;">Dashboard</h2>
-            <a asp-area="Example" asp-controller="Users" asp-action="Index" style="display: flex; justify-content: center;">Gestione utenti</a>
-            <a asp-area="Example" asp-controller="Teams" asp-action="Index" style="display: flex; justify-content: center;">Gestione team</a>
-            <a asp-area="Example" asp-controller="Timesheets" asp-action="Index" style="display: flex; justify-content: center;">Gestione time</a>
-            <a href="#" style="display: flex; justify-content: center;">Le mie richieste</a>
-            <a href="#" style="display: flex; justify-content: center;">Gestione Richieste</a>
-        </div>
+        @if (identitaCorrente != null){
+            <div class="sidebar">
+                <a class="navbar-brand" style="display: flex; justify-content: center;" asp-controller="Dashboard">
+                    <img class="onit-suites-logo" src="~/images/app-logo.png" />
+                </a>
+                @if (identitaCorrente.Role == "Admin"){
+                    <a asp-area="Example" asp-controller="Users" asp-action="Index" style="display: flex; justify-content: center;">Gestione utenti</a>
+                    <a asp-area="Example" asp-controller="Teams" asp-action="Index" style="display: flex; justify-content: center;">Gestione team</a>
+                    <a asp-area="Example" asp-controller="Timesheets" asp-action="Index" style="display: flex; justify-content: center;">Gestione time</a>
+                }
+                <a href="#" style="display: flex; justify-content: center;">Le mie richieste</a>
+                <a href="#" style="display: flex; justify-content: center;">Gestione Richieste</a>
+            </div>
+        }
         @RenderSection("pageTitle", false)
     </div>
     @RenderSection("pageSubtitle", false)
