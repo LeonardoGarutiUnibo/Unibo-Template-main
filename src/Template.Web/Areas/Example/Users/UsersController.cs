@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Localization;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Template.Services.Shared;
 using Template.Web.Infrastructure;
@@ -31,6 +33,20 @@ namespace Template.Web.Areas.Example.Users
             var users = await _sharedService.Query(model.ToUsersIndexQuery());
             model.SetUsers(users);
 
+            var timesheetQuery = new TimesheetsIndexQuery
+            {
+                IdCurrentTimesheet = Guid.Empty,
+                Paging = null
+            };
+            
+            var timesheetsDto = await _sharedService.Query(timesheetQuery);
+            
+            model.Timesheets = timesheetsDto.Timesheets.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = t.Name
+            }).ToList();
+
             return View(model);
         }
 
@@ -53,7 +69,19 @@ namespace Template.Web.Areas.Example.Users
                 }));
             }
 
+            var timesheetQuery = new TimesheetsIndexQuery
+            {
+                IdCurrentTimesheet = Guid.Empty,
+                Paging = null 
+            };
 
+            var timesheetsDto = await _sharedService.Query(timesheetQuery);
+
+            model.Timesheets = timesheetsDto.Timesheets.Select(t => new SelectListItem
+            {
+                Value = t.Id.ToString(),
+                Text = t.Name
+            }).ToList();
 
             return View(model);
         }
@@ -61,6 +89,7 @@ namespace Template.Web.Areas.Example.Users
         [HttpPost]
         public virtual async Task<IActionResult> Edit(EditViewModel model)
         {
+            Console.WriteLine("Role ricevuto: " + model.Role);
             if (ModelState.IsValid)
             {
                 try
@@ -88,17 +117,26 @@ namespace Template.Web.Areas.Example.Users
                 Alerts.AddError(this, "Errore in aggiornamento");
             }
 
-            return RedirectToAction(Actions.Edit(model.Id));
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Delete(Guid id)
         {
-            // Query to delete user
+            Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
 
-            Alerts.AddSuccess(this, "Utente cancellato");
+            try
+            {
+                await _sharedService.DeleteUser(id);
+                Alerts.AddSuccess(this, "Utente cancellato");
+            }
+            catch (Exception e)
+            {
+                Alerts.AddError(this, "Errore nella cancellazione: " + e.Message);
+            }
 
-            return RedirectToAction(Actions.Index());
+            return RedirectToAction(nameof(Index));
         }
     }
 }

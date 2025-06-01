@@ -1,26 +1,37 @@
 using Template.Web.Infrastructure;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Template.Services.Shared;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.Http;
 
 namespace Template.Web.Areas.Example.TeamMembers
 {
+    public class TeamWithUserCountViewModel
+    {
+        public Guid TeamId { get; set; }
+        public string TeamName { get; set; }
+        public int UserCount { get; set; }
+        public string ManagerName { get; set; }
+    }
+
     public class IndexViewModel : PagingViewModel
     {
+        public List<TeamWithUserCountViewModel> TeamsWithUserCount { get; set; } = new();
+        public List<UserDetailDTO> Users { get; set; } = new List<UserDetailDTO>();
+        public List<SelectListItem> Teams { get; set; } = new List<SelectListItem>();
+        public List<TeamMemberWithUserDetailViewModel> EnrichedTeamMembers { get; set; } = new List<TeamMemberWithUserDetailViewModel>();
+
+        public string Filter { get; set; }
+        public IEnumerable<TeamMemberIndexViewModel> TeamMembers { get; set; } = Array.Empty<TeamMemberIndexViewModel>();
+
         public IndexViewModel()
         {
             OrderBy = nameof(TeamMemberIndexViewModel.TeamId);
             OrderByDescending = false;
-            TeamMembers = Array.Empty<TeamMemberIndexViewModel>();
         }
-
-        public string Filter { get; set; }
-
-        public IEnumerable<TeamMemberIndexViewModel> TeamMembers { get; set; }
 
         internal void SetTeamMembers(TeamMembersIndexDTO teamMembersIndexDTO)
         {
@@ -59,16 +70,28 @@ namespace Template.Web.Areas.Example.TeamMembers
     {
         public TeamMemberIndexViewModel(TeamMembersIndexDTO.TeamMember teamMemberIndexDTO)
         {
-            this.Id = teamMemberIndexDTO.Id;
-            this.TeamId = teamMemberIndexDTO.TeamId;
-            this.UserId = teamMemberIndexDTO.UserId;
-            this.IsManager = teamMemberIndexDTO.IsManager;
+            Id = teamMemberIndexDTO.Id;
+            TeamId = teamMemberIndexDTO.TeamId;
+            UserId = teamMemberIndexDTO.UserId;
+            IsManager = teamMemberIndexDTO.IsManager;
         }
-
 
         public Guid Id { get; set; }
         public Guid TeamId { get; set; }
         public Guid UserId { get; set; }
+        public bool IsManager { get; set; }
+    }
+
+    public class TeamMemberWithUserDetailViewModel
+    {
+        public Guid TeamMemberId { get; set; }
+        public Guid UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
+        public Guid TeamId { get; set; }
+        public string TeamName { get; set; }
         public bool IsManager { get; set; }
     }
 }

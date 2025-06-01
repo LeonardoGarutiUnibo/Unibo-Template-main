@@ -33,5 +33,17 @@ namespace Template.Services.Shared
 
             return team.Id;
         }
+
+        public async Task DeleteTeam(Guid id)
+        {
+            var team = await _dbContext.Teams
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
+            if (team != null)
+            {
+                _dbContext.Teams.Remove(team);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

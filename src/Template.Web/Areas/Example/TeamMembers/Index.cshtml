@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Gestione Utenti</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .fixed-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .fixed-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4" style="padding-left: 200px;">
+        <h2>Gestione Utenti dei Team</h2>
+
+
+        <!-- Tabella utenti -->
+        <div class="btn-group mb-3" role="group">
+            <button type="button" class="btn btn-outline-primary" onclick="showSection('users')">👥 Mostra Utenti</button>
+            <button type="button" class="btn btn-outline-secondary" onclick="showSection('teams')">🧑‍🤝‍🧑 Mostra Team</button>
+        </div>
+        <div id="usersSection">
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Cognome</th>
+                        <th>Nickname</th>
+                        <th>Email</th>
+                        <th>Ruolo</th>
+                        <th>Team</th> <!-- Nuova colonna -->
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.FirstName</td>
+                            <td>@user.LastName</td>
+                            <td>@user.NickName</td>
+                            <td>@user.Email</td>
+                            <td>@user.Role</td>
+
+                            <!-- Select per cambiare team -->
+                            <td>
+                                <select class="form-select" id="teamSelect_@user.Id">
+                                @if (user.TeamId == null)
+                                {
+                                    <option value="" selected>-- Nessun team --</option>
+                                }
+                            
+                                @foreach (var team in Model.TeamsWithUserCount)
+                                {
+                                    if (user.TeamId == team.TeamId)
+                                    {
+                                        <option value="@team.TeamId" selected>@team.TeamName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@team.TeamId">@team.TeamName</option>
+                                    }
+                                }
+                            </select>
+                                <button class="btn btn-sm btn-primary mt-1" onclick="saveUserTeam('@user.Id')">Salva</button>
+                            </td>
+
+                            <td>
+                                <button class="btn btn-warning btn-sm"
+                                        onclick="editUser(
+                                            '@user.Id',
+                                            '@user.FirstName',
+                                            '@user.LastName',
+                                            '@user.NickName',
+                                            '@user.Email',
+                                            '@user.Role'
+                                        )">
+                                    ✏️ Modifica
+                                </button>
+                                <form method="post" asp-action="Delete" asp-controller="Users" asp-area="Example"
+                                      onsubmit="return confirm('Sei sicuro di voler cancellare questo utente?');" style="display:inline;">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <button type="submit" class="btn btn-danger">🗑️</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Tabella Team (inizialmente nascosta) -->
+        <div id="teamsSection" style="display: none;">
+            <table class="table table-bordered mt-4">
+                <thead>
+                    <tr>
+                        <th>Nome Team</th>
+                        <th>Numero Utenti</th>
+                        <th>Manager</th>
+                        <th>Azioni</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var team in Model.TeamsWithUserCount)
+                    {
+                        <tr>
+                            <td>@team.TeamName</td>
+                            <td>@team.UserCount</td>
+                            <td>@team.ManagerName</td>
+                            <td>
+                                
+                                <button class="btn btn-outline-info btn-sm" onclick="showTeamUsers('@team.TeamId')">📄 Dettagli</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="modal fade" id="teamUsersModal" tabindex="-1" aria-labelledby="teamUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="teamUsersModalLabel">Utenti del Team</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <div class="modal-body">
+            <table>
+    <thead>
+        <tr>
+            <th>Nome</th>
+            <th>Email</th>
+            <th>Ruolo</th>
+            <th>Manager</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach(var member in Model.EnrichedTeamMembers)
+        {
+            <tr>
+                <td>@member.FirstName @member.LastName</td>
+                <td>@member.Email</td>
+                <td>@member.Role</td>
+                <td>@(member.IsManager ? "✔️" : "")</td>
+            </tr>
+        }
+    </tbody>
+</table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+
+        function showSection(section) {
+            const users = document.getElementById("usersSection");
+            const teams = document.getElementById("teamsSection");
+            if (section === "users") {
+                users.style.display = "block";
+                teams.style.display = "none";
+            } else {
+                users.style.display = "none";
+                teams.style.display = "block";
+            }
+        }
+
+        async function showTeamUsers(teamId) {
+            // Fetch utenti del team da backend via API o endpoint (implementalo tu nel controller)
+            try {
+                const response = await fetch(`/Example/TeamMembers/GetUsers?teamId=${teamId}`);
+                if (!response.ok) throw new Error('Errore nel recupero utenti');
+                const users = await response.json();
+
+                const tbody = document.querySelector("#teamUsersModal table tbody");
+                tbody.innerHTML = "";
+
+                users.forEach(user => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                        <td>${user.teamName}</td>
+                        <td>${user.isManager ? "✔️" : ""}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Mostra la modale usando Bootstrap 5
+                const modal = new bootstrap.Modal(document.getElementById('teamUsersModal'));
+                modal.show();
+
+            } catch (error) {
+                alert("Impossibile caricare gli utenti del team: " + error.message);
+            }
+        }
+
+        async function saveUserTeam(userId) {
+            const select = document.getElementById(`teamSelect_${userId}`);
+            const selectedTeamId = select.value;
+
+            try {
+                const response = await fetch('/Example/TeamMembers/AssignTeam', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        teamId: selectedTeamId
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("Errore nel salvataggio");
+                }
+
+                alert("Team aggiornato con successo!");
+            } catch (err) {
+                alert("Errore durante il salvataggio: " + err.message);
+            }
+        }
+
+        function showUserForm() {
+            document.getElementById("userForm").classList.add("active");
+
+            // Modalità creazione: resetta form e mostra password
+            document.getElementById("formTitle").textContent = "Crea Nuovo Utente";
+            document.getElementById("userId").value = "";
+            document.getElementById("firstName").value = "";
+            document.getElementById("lastName").value = "";
+            document.getElementById("nickName").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("passwordGroup").style.display = "block";
+            document.getElementById("isAdmin").checked = false;
+            document.getElementById("roleField").value = "User";
+        }
+
+        function hideUserForm() {
+            document.getElementById("userForm").classList.remove("active");
+        }
+
+        function editUser(id, firstName, lastName, nickName, email, role) {
+            showUserForm();
+
+            // Cambia titolo form in modalità modifica
+            document.getElementById("formTitle").textContent = "Modifica Utente";
+
+            // Imposta valori del form
+            document.getElementById("userId").value = id;
+            document.getElementById("firstName").value = firstName;
+            document.getElementById("lastName").value = lastName;
+            document.getElementById("nickName").value = nickName;
+            document.getElementById("email").value = email;
+
+            // Nascondi campo password in modifica e resetta valore
+            document.getElementById("passwordGroup").style.display = "none";
+            document.getElementById("password").value = "";
+
+            // Imposta checkbox Admin in base al ruolo
+            const isAdminChecked = role.toLowerCase() === "admin";
+            document.getElementById("isAdmin").checked = isAdminChecked;
+            document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
+        }
+
+        // Aggiorna roleField prima del submit
+        document.getElementById("userFormForm").addEventListener("submit", function(event) {
+            const isAdminChecked = document.getElementById("isAdmin").checked;
+            document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
+        });
+    </script>
+</body>
+</html>

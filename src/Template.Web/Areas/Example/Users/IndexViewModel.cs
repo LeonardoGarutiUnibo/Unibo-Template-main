@@ -6,11 +6,13 @@ using System.Linq;
 using Template.Services.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Template.Web.Areas.Example.Users
 {
     public class IndexViewModel : PagingViewModel
     {
+        public List<SelectListItem> Timesheets { get; set; } = new List<SelectListItem>();
         public IndexViewModel()
         {
             OrderBy = nameof(UserIndexViewModel.Email);
@@ -64,11 +66,18 @@ namespace Template.Web.Areas.Example.Users
             this.Email = userIndexDTO.Email;
             this.FirstName = userIndexDTO.FirstName;
             this.LastName = userIndexDTO.LastName;
+            this.NickName = userIndexDTO.NickName;
+            this.Role = userIndexDTO.Role;
+            this.TimesheetId = userIndexDTO.TimesheetId;
         }
 
         public Guid Id { get; set; }
         public string Email { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public string NickName { get; set; }
+        public string Role { get; set; }
+        public Guid TimesheetId { get; set; }
+        public List<SelectListItem> Timesheets { get; set; } = new();
     }
 }

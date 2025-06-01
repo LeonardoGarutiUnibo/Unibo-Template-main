@@ -1,5 +1,10 @@
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.DependencyInjection;  // per CreateScope, GetRequiredService
+using Microsoft.EntityFrameworkCore;            // per Database.Migrate()
+using System;                                   // per Exception, Console
+using Template.Services;                            // esempio, sostituisci con il namespace corretto di TemplateDbContext
+using Template.Infrastructure;              // per Migrate
 
 namespace Template.Web
 {
@@ -7,7 +12,27 @@ namespace Template.Web
     {
         public static void Main(string[] args)
         {
-            CreateHostBuilder(args).Build().Run();
+            var host = CreateHostBuilder(args).Build();
+
+            using (var scope = host.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+
+                try
+                {
+                    var context = services.GetRequiredService<TemplateDbContext>();
+                    context.Database.Migrate();
+
+                    DataGenerator.InitializeUsers(context);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Errore durante la migration o seeding: {ex.Message}");
+                    throw;
+                }
+            }
+
+            host.Run();
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

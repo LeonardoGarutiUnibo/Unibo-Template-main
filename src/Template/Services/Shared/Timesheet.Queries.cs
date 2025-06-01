@@ -102,6 +102,7 @@ namespace Template.Services.Shared
                     .Select(x => new TimesheetsIndexDTO.Timesheet
                     {
                         Id = x.Id,
+                        Name = x.Name,
                         WeekDay = x.WeekDay,
                     })
                     .ToArrayAsync(),

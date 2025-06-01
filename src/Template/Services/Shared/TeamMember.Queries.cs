@@ -29,6 +29,7 @@ namespace Template.Services.Shared
 
     public class TeamMembersIndexQuery
     {
+        public Guid TeamId { get; set; }
         public Guid IdCurrentTeamMember { get; set; }
         public string Filter { get; set; }
 
@@ -51,6 +52,9 @@ namespace Template.Services.Shared
     public class TeamMemberDetailQuery
     {
         public Guid Id { get; set; }
+        public Guid UserId { get; set; }
+        public Guid TeamId { get; set; }
+        public bool IsManager { get; set; }
     }
 
     public class TeamMemberDetailDTO {

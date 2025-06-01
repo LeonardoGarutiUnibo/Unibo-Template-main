@@ -6,6 +6,7 @@ using Template.Services.Shared;
 using Template.Web.Infrastructure;
 using Template.Web.SignalR;
 using Template.Web.SignalR.Hubs.Events;
+using System.Linq;
 
 namespace Template.Web.Areas.Example.Timesheets
 {
@@ -57,40 +58,60 @@ namespace Template.Web.Areas.Example.Timesheets
         }
 
         [HttpPost]
-        public virtual async Task<IActionResult> Edit(EditViewModel model)
+        public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
         {
-            if (ModelState.IsValid)
+            Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDaysEncoded: {WeekDaysEncoded}");
+            
+            if (!string.IsNullOrEmpty(WeekDaysEncoded))
             {
-                try
-                {
-                    model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
-
-                    Alerts.AddSuccess(this, "Informazioni aggiornate");
-
-                    // Esempio lancio di un evento SignalR
-                }
-                catch (Exception e)
-                {
-                    ModelState.AddModelError(string.Empty, e.Message);
-                }
+                model.WeekDay = WeekDaysEncoded.Replace("-", ",");
             }
 
-            if (ModelState.IsValid == false)
+            if (!ModelState.IsValid)
             {
+                Console.WriteLine("ModelState non valido:");
+                foreach(var e in ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    Console.WriteLine(e.ErrorMessage);
+                }
+                Alerts.AddError(this, "Errore in aggiornamento");
+                return RedirectToAction(nameof(Index));
+            }
+
+            try
+            {
+                Console.WriteLine("Prima di chiamare HandleTimesheet");
+                model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
+                Console.WriteLine("Dopo chiamata HandleTimesheet");
+                Alerts.AddSuccess(this, "Informazioni aggiornate");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Eccezione HandleTimesheet: " + e.Message);
+                ModelState.AddModelError(string.Empty, e.Message);
                 Alerts.AddError(this, "Errore in aggiornamento");
             }
 
-            return RedirectToAction(Actions.Edit(model.Id));
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Delete(Guid id)
         {
-            // Query to delete user
+            Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
 
-            Alerts.AddSuccess(this, "Utente cancellato");
+            try
+            {
+                await _sharedService.DeleteTimesheet(id); 
+                Alerts.AddSuccess(this, "Timesheet cancellato");
+            }
+            catch (Exception e)
+            {
+                Alerts.AddError(this, "Errore nella cancellazione: " + e.Message);
+            }
 
-            return RedirectToAction(Actions.Index());
+            return RedirectToAction(nameof(Index));
         }
     }
 }

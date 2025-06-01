@@ -1,1 +1,186 @@
-﻿Gestione Utenti
+﻿<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Gestione Utenti</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .fixed-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
+            border-radius: 10px;
+            display: none;
+            z-index: 1000;
+        }
+
+        .fixed-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4" style="padding-left: 200px;">
+        <h2>Gestione Utenti</h2>
+
+        <div class="mb-3">
+            <button class="btn btn-success" onclick="showUserForm()">+ Nuovo Utente</button>
+        </div>
+        <div id="userForm" class="fixed-overlay">
+            <div class="form-container">
+                <h3 id="formTitle">Crea Nuovo Utente</h3>
+                <form method="post" action="/Example/Users/Edit" id="userFormForm">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="Id" id="userId" value="" />
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome</label>
+                        <input type="text" class="form-control" id="firstName" name="FirstName" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Cognome</label>
+                        <input type="text" class="form-control" id="lastName" name="LastName" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Nickname</label>
+                        <input type="text" class="form-control" id="nickName" name="NickName" required />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" name="Email" required />
+                    </div>
+
+                    <div class="mb-3" id="passwordGroup">
+                        <label class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password" name="Password" />
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Timesheet</label>
+                        <select class="form-select" id="timesheetId" name="TimesheetId" required>
+                            <option value="">-- Seleziona Timesheet --</option>
+                            @foreach(var ts in Model.Timesheets)
+                            {
+                                <option value="@ts.Value">@ts.Text</option>
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3 form-check">
+                        <input type="checkbox" class="form-check-input" id="isAdmin" />
+                        <label class="form-check-label" for="isAdmin">Admin</label>
+                    </div>
+
+                    <input type="hidden" name="Role" id="roleField" value="User" />
+                    <button type="submit" class="btn btn-primary">Salva</button>
+                    <button type="button" class="btn btn-secondary" onclick="hideUserForm()">Chiudi</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Tabella utenti -->
+        <table class="table table-bordered mt-4">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Cognome</th>
+                    <th>Nickname</th>
+                    <th>Email</th>
+                    <th>Ruolo</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var user in Model.Users)
+                {
+                    <tr>
+                        <td>@user.FirstName</td>
+                        <td>@user.LastName</td>
+                        <td>@user.NickName</td>
+                        <td>@user.Email</td>
+                        <td>@user.Role</td>
+                        <td>
+                            <button class="btn btn-warning btn-sm"
+                                onclick="editUser(
+                                    '@user.Id',
+                                    '@user.FirstName',
+                                    '@user.LastName',
+                                    '@user.NickName',
+                                    '@user.Email',
+                                    '@user.Role'
+                                )">
+                                ✏️ Modifica
+                            </button>
+                            <form method="post" asp-action="Delete" asp-controller="Users" asp-area="Example"
+                                  onsubmit="return confirm('Sei sicuro di voler cancellare questo utente?');" style="display:inline;">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@user.Id" />
+                                <button type="submit" class="btn btn-danger">🗑️</button>
+                            </form>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function showUserForm() {
+            document.getElementById("userForm").classList.add("active");
+
+            
+            document.getElementById("formTitle").textContent = "Crea Nuovo Utente";
+            document.getElementById("userId").value = "";
+            document.getElementById("firstName").value = "";
+            document.getElementById("lastName").value = "";
+            document.getElementById("nickName").value = "";
+            document.getElementById("email").value = "";
+            document.getElementById("password").value = "";
+            document.getElementById("passwordGroup").style.display = "block";
+            document.getElementById("isAdmin").checked = false;
+            document.getElementById("roleField").value = "User";
+        }
+
+        function hideUserForm() {
+            document.getElementById("userForm").classList.remove("active");
+        }
+
+        function editUser(id, firstName, lastName, nickName, email, role) {
+            showUserForm();
+
+            
+            document.getElementById("formTitle").textContent = "Modifica Utente";
+
+            
+            document.getElementById("userId").value = id;
+            document.getElementById("firstName").value = firstName;
+            document.getElementById("lastName").value = lastName;
+            document.getElementById("nickName").value = nickName;
+            document.getElementById("email").value = email;
+
+            
+            document.getElementById("passwordGroup").style.display = "none";
+            document.getElementById("password").value = "";
+
+            
+            const isAdminChecked = role.toLowerCase() === "admin";
+            document.getElementById("isAdmin").checked = isAdminChecked;
+            document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
+        }
+
+        
+        document.getElementById("userFormForm").addEventListener("submit", function(event) {
+            const isAdminChecked = document.getElementById("isAdmin").checked;
+            document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
+        });
+    </script>
+</body>
+</html>

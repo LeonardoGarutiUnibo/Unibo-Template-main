@@ -13,6 +13,8 @@ using System.Linq;
 using Template.Services;
 using Template.Web.Infrastructure;
 using Template.Web.SignalR.Hubs;
+using Pomelo.EntityFrameworkCore.MySql.Infrastructure;
+using System;
 
 namespace Template.Web
 {
@@ -34,7 +36,10 @@ namespace Template.Web
 
             services.AddDbContext<TemplateDbContext>(options =>
             {
-                options.UseInMemoryDatabase(databaseName: "Template");
+                   options.UseMySql(
+                        Configuration.GetConnectionString("DefaultConnection"),
+                        new MySqlServerVersion(new Version(8, 0, 36)) // sostituisci con la tua versione
+                    );
             });
 
             // SERVICES FOR AUTHENTICATION
@@ -117,7 +122,7 @@ namespace Template.Web
                 endpoints.MapAreaControllerRoute("Example", "Timesheets", "Example/{controller=Timesheets}/{action=Index}/{id?}");
                 endpoints.MapAreaControllerRoute("Example", "Users", "Example/{controller=Users}/{action=Index}/{id?}");
                 endpoints.MapAreaControllerRoute("Example", "Teams", "Example/{controller=Teams}/{action=Index}/{id?}");
-                endpoints.MapAreaControllerRoute("Example", "TeamMembers", "Example/{controller=TeamsMembers}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "TeamMembers", "Example/{controller=TeamMembers}/{action=Index}/{id?}");
                 endpoints.MapAreaControllerRoute("Example", "AbsenceEvents", "Example/{controller=AbsenceEvents}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute("default", "{controller=Login}/{action=Login}");
             });

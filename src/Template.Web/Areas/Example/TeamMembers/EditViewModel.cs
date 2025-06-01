@@ -1,6 +1,8 @@
 using System;
 using System.ComponentModel.DataAnnotations;
 using Template.Services.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 using Template.Web.Infrastructure;
 
 namespace Template.Web.Areas.Example.TeamMembers
@@ -17,6 +19,8 @@ namespace Template.Web.Areas.Example.TeamMembers
         public Guid UserId { get; set; }
         public bool IsManager { get; set; }
 
+        public List<UserDetailDTO> Users { get; set; } = new List<UserDetailDTO>();
+        public List<SelectListItem> Teams { get; set; } = new List<SelectListItem>();
         public string ToJson()
         {
             return Infrastructure.JsonSerializer.ToJsonCamelCase(this);

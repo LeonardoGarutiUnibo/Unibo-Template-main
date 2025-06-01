@@ -35,5 +35,17 @@ namespace Template.Services.Shared
 
             return timesheet.Id;
         }
+
+        public async Task DeleteTimesheet(Guid id)
+        {
+            var timesheet = await _dbContext.Timesheets
+                .Where(x => x.Id == id)
+                .FirstOrDefaultAsync();
+            if (timesheet != null)
+            {
+                _dbContext.Timesheets.Remove(timesheet);
+                await _dbContext.SaveChangesAsync();
+            }
+        }
     }
 }

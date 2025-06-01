@@ -24,7 +24,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome1",
                     NickName = "Nickname1",
                     Role = "Admin",
-                    TimesheetId = Guid.Parse("b7f5e3c8-4e2b-4703-9879-9b1f60e5c2a7"),
+                    
                 },
                 new User
                 {
@@ -35,8 +35,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome2",
                     NickName = "Nickname2",
                     Role = "Admin",
-                    TimesheetId = Guid.Parse("b7f5e3c8-4e2b-4703-9879-9b1f60e5c2a7"),
-                    TeamId = Guid.Parse("c2e4b7f0-1ad3-4536-82e9-61e8e3bdc91f"),
+                    
                 },
                 new User
                 {
@@ -47,8 +46,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome3",
                     NickName = "Nickname3",
                     Role =  "User",
-                    TimesheetId = Guid.Parse("a1c1f8a2-7c1e-4d3c-9d4f-21b0a5fd30de"),
-                    TeamId = Guid.Parse("d3a2e9b4-7b6f-4d13-a3ef-fd2b3dc802bc"),
+                    
 
                 });
 
@@ -65,7 +63,7 @@ namespace Template.Infrastructure
             context.Teams.AddRange(
                 new Team
                 {
-                    Id =Guid.Parse("c2e4b7f0-1ad3-4536-82e9-61e8e3bdc91f"), // Forced to specific Guid for tests
+                    Id = Guid.Parse("c2e4b7f0-1ad3-4536-82e9-61e8e3bdc91f"), // Forced to specific Guid for tests
                     Name = "Team A",
                 },
                 new Team
@@ -74,6 +72,7 @@ namespace Template.Infrastructure
                     Name = "Team B",
                 });
             context.SaveChanges();
+            
         }
 
         public static void InitializeTeamMembers(TemplateDbContext context){
@@ -91,7 +90,7 @@ namespace Template.Infrastructure
             {
                 return;   // Data was already seeded
             }
-                   
+            
             context.Timesheets.AddRange(
                 new Timesheet
                 {
@@ -106,6 +105,7 @@ namespace Template.Infrastructure
                     WeekDay = "0-2-4"
                 });
             context.SaveChanges();
+            
         }
 
         public static void InitializeAbsenceEvents(TemplateDbContext context){

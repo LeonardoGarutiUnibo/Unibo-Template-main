@@ -63,15 +63,16 @@ namespace Template.Web.Areas.Example.Teams
             {
                 try
                 {
+                    Console.WriteLine("Prima di chiamare HandleTeam");
                     model.Id = await _sharedService.HandleTeam(model.ToAddOrUpdateTeamCommand());
-
+                    Console.WriteLine("Dopo chiamata HandleTeam");
                     Alerts.AddSuccess(this, "Informazioni aggiornate");
-
-                    // Esempio lancio di un evento SignalR
                 }
                 catch (Exception e)
                 {
+                    Console.WriteLine("Eccezione HandleTeam: " + e.Message);
                     ModelState.AddModelError(string.Empty, e.Message);
+                    Alerts.AddError(this, "Errore in aggiornamento");
                 }
             }
 
@@ -80,17 +81,26 @@ namespace Template.Web.Areas.Example.Teams
                 Alerts.AddError(this, "Errore in aggiornamento");
             }
 
-            return RedirectToAction(Actions.Edit(model.Id));
+            return RedirectToAction(nameof(Index));
         }
 
         [HttpPost]
+        [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Delete(Guid id)
         {
-            // Query to delete user
+            Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
 
-            Alerts.AddSuccess(this, "Utente cancellato");
+            try
+            {
+                await _sharedService.DeleteTeam(id); 
+                Alerts.AddSuccess(this, "Team cancellato");
+            }
+            catch (Exception e)
+            {
+                Alerts.AddError(this, "Errore nella cancellazione: " + e.Message);
+            }
 
-            return RedirectToAction(Actions.Index());
+            return RedirectToAction(nameof(Index));
         }
     }
 }

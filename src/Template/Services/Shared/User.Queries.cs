@@ -21,6 +21,10 @@ namespace Template.Services.Shared
         public class User
         {
             public Guid Id { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string NickName { get; set; }
+
             public string Email { get; set; }
             public string Role { get; set; }
         }
@@ -65,6 +69,7 @@ namespace Template.Services.Shared
         public string LastName { get; set; }
         public string NickName { get; set; }
         public string Role { get; set; }
+        public string Password { get; set; }
         public Guid TeamId { get; set; }
         public Guid TimesheetId { get; set; }
     }
@@ -99,13 +104,16 @@ namespace Template.Services.Shared
                 {
                     Id = x.Id,
                     Email = x.Email,
-                    Role =  x.Role
+                    Role =  x.Role,
+                    FirstName = x.FirstName,
+                    LastName  = x.LastName,
+                    NickName  = x.NickName,
                 })
                 .ToArrayAsync(),
                 Count = await queryable.CountAsync(),
             };
         }
-
+        
         /// <summary>
         /// Returns users for an index page
         /// </summary>
@@ -131,7 +139,8 @@ namespace Template.Services.Shared
                         Email = x.Email,
                         Role = x.Role,
                         FirstName = x.FirstName,
-                        LastName = x.LastName
+                        LastName = x.LastName,
+                        NickName = x.NickName
                     })
                     .ToArrayAsync(),
                 Count = await queryable.CountAsync()
@@ -168,10 +177,10 @@ namespace Template.Services.Shared
         /// <exception cref="LoginException">Invalid credentials</exception>
         public async Task<UserDetailDTO> Query(CheckLoginCredentialsQuery qry)
         {
+
             var user = await _dbContext.Users
                 .Where(x => x.Email == qry.Email)
                 .FirstOrDefaultAsync();
-
             if (user == null || user.IsMatchWithPassword(qry.Password) == false)
                 throw new LoginException("Email o password errate");
 

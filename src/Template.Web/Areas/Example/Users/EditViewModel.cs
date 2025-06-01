@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 using Template.Services.Shared;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using System.Collections.Generic;
 using Template.Web.Infrastructure;
 
 namespace Template.Web.Areas.Example.Users
@@ -21,6 +23,13 @@ namespace Template.Web.Areas.Example.Users
         public string LastName { get; set; }
         [Display(Name = "Nickname")]
         public string NickName { get; set; }
+        [Display(Name = "Ruolo")]
+        public string Role { get; set; }
+        public string Password { get; set; }
+        public Guid TimesheetId { get; set; }
+        public List<SelectListItem> Timesheets { get; set; } = new List<SelectListItem>();
+
+        public Guid? SelectedTimesheetId { get; set; }
 
         public string ToJson()
         {
@@ -36,6 +45,9 @@ namespace Template.Web.Areas.Example.Users
                 FirstName = userDetailDTO.FirstName;
                 LastName = userDetailDTO.LastName;
                 NickName = userDetailDTO.NickName;
+                Role = userDetailDTO.Role;
+                Password = userDetailDTO.Password;
+                TimesheetId = userDetailDTO.TimesheetId;
             }
         }
 
@@ -47,7 +59,10 @@ namespace Template.Web.Areas.Example.Users
                 Email = Email,
                 FirstName = FirstName,
                 LastName = LastName,
-                NickName = NickName
+                NickName = NickName,
+                Role =  Role,
+                Password =  Password,
+                TimesheetId =  TimesheetId,
             };
         }
     }

@@ -40,24 +40,26 @@
         <div id="timesheetForm" class="fixed-overlay">
             <div class="form-container">
                 <h3>Crea Timesheet</h3>
-                <form>
+                <form  method="post" action="/Example/Timesheets/Edit">
+                    @Html.AntiForgeryToken()
                     <div class="mb-3">
                         <label class="form-label">Nome Timesheet</label>
-                        <input type="text" class="form-control" id="timesheetName">
+                        <input type="text" class="form-control" id="timesheetName" name="Name">
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Giorni Settimanali</label>
                         <div id="daysCheckboxContainer">
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Lunedì"> Lunedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Martedì"> Martedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Mercoledì"> Mercoledì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Giovedì"> Giovedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Venerdì"> Venerdì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Sabato"> Sabato</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="Domenica"> Domenica</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="0"> Lunedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="1"> Martedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="2"> Mercoledì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="3"> Giovedì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="4"> Venerdì</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="5"> Sabato</div>
+                            <div class="form-check"><input type="checkbox" class="form-check-input" value="6"> Domenica</div>
                         </div>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="saveTimesheet()">Salva</button>
+                    <input type="hidden" id="weekDaysEncoded" name="WeekDaysEncoded" />
+                    <button type="submit" class="btn btn-primary" onclick="saveTimesheet(event)">Salva</button>
                     <button type="button" class="btn btn-secondary" onclick="hideTimesheetForm()">Chiudi</button>
                 </form>
             </div>
@@ -65,10 +67,10 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
+                    <th>TimesheetId</th>
                     <th>Nome timesheet</th>
                     <th>Giorni timesheet</th>
                     <th>Delete timesheet</th>
-                    <th>Edit timesheet</th>
                 </tr>
             </thead>
             <tbody>
@@ -76,17 +78,15 @@
                 {
                     <tr>
                         <td>@timesheet.Id</td>
-                        <td>@timesheet.Name</td>
+                        <td>@(string.IsNullOrEmpty(timesheet.Name) ? "N/D" : timesheet.Name)</td>
                         <td>@string.Join("-", timesheet.WeekDay)</td>
                         <td>
-                            <button class="btn btn-danger" onclick="deleteTimesheet('@timesheet.Id')">
-                                🗑️
-                            </button>
-                        </td>
-                        <td>
-                            <button class="btn btn-warning" onclick="editTimesheet('@timesheet.Id')">
-                                ✏️
-                            </button>
+                            <form method="post" asp-action="Delete" asp-controller="Timesheets" asp-area="Example"
+                                  onsubmit="return confirm('Sei sicuro di voler cancellare questo timesheet?');">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@timesheet.Id" />
+                                <button type="submit" class="btn btn-danger">🗑️</button>
+                            </form>
                         </td>
                     </tr>
                 }
@@ -98,11 +98,23 @@
 
 <script>
     function deleteTimesheet(id) {
-        alert("Eliminato timesheet ID: " + id);
-    }
-
-    function editTimesheet(id) {
-        alert("Modifica timesheet ID: " + id);
+        if (confirm("Sei sicuro di voler cancellare questo timesheet?")) {
+            fetch(`/Example/Timesheets/Delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    alert("Errore nella cancellazione");
+                }
+            });
+        }
     }
     function showTimesheetForm() {
         document.getElementById("timesheetForm").classList.add("active");
@@ -123,15 +135,22 @@ function hideTimesheetForm() {
     document.getElementById("timesheetForm").classList.remove("active");
 }
 
-function saveTimesheet() {
+function saveTimesheet(event) {
+    event.preventDefault();
+
     let name = document.getElementById("timesheetName").value;
     let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
     let days = Array.from(checkboxes).map(cb => cb.value);
 
     if (name && days.length > 0) {
-        alert(`Timesheet creato!\nNome: ${name}\nGiorni: ${days.join(", ")}`);
-        hideTimesheetForm();
-        // Qui puoi inviare i dati al backend con fetch()
+        let daysIndices = days;
+        let result = daysIndices.join("-");
+
+        document.getElementById("weekDaysEncoded").value = result;
+
+        document.getElementById("timesheetName").value = name;
+
+        event.target.closest("form").submit();
     } else {
         alert("Compila tutti i campi!");
     }
