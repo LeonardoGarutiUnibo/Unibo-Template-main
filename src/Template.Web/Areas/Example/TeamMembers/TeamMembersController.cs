@@ -14,9 +14,16 @@ namespace Template.Web.Areas.Example.TeamMembers
     [Area("Example")]
     public partial class TeamMembersController : AuthenticatedBaseController
     {
+
         private readonly SharedService _sharedService;
         private readonly IPublishDomainEvents _publisher;
         private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
+
+        public class UpdateUserTeamCommand
+        {
+            public Guid UserId { get; set; }
+            public Guid? TeamId { get; set; } // Nullable se vuoi anche permettere la rimozione
+        }
 
         public TeamMembersController(
             SharedService sharedService,
@@ -33,7 +40,6 @@ namespace Template.Web.Areas.Example.TeamMembers
         [HttpGet]
         public virtual async Task<IActionResult> GetUsers(Guid teamId)
         {
-            // Ottieni i membri del team specificato
             var teamMembersDto = await _sharedService.Query(new TeamMembersIndexQuery
             {
                 TeamId = teamId,
@@ -41,19 +47,16 @@ namespace Template.Web.Areas.Example.TeamMembers
                 Paging = null
             });
 
-            // Ottieni tutti gli utenti
             var usersDto = await _sharedService.Query(new UsersIndexQuery
             {
                 IdCurrentUser = Guid.Empty,
                 Paging = null
             });
 
-            // Crea dizionario per lookup veloce degli utenti
             var userDictionary = usersDto.Users.ToDictionary(u => u.Id, u => u);
 
-            // ✅ Filtro: solo membri del team specificato
             var teamUsers = teamMembersDto.TeamMembers
-                .Where(tm => tm.TeamId == teamId) // <--- questo filtro è fondamentale
+                .Where(tm => tm.TeamId == teamId)
                 .Where(tm => userDictionary.ContainsKey(tm.UserId))
                 .Select(tm =>
                 {
@@ -94,6 +97,7 @@ namespace Template.Web.Areas.Example.TeamMembers
                 LastName = u.LastName,
                 NickName = u.NickName,
                 Email = u.Email,
+                TeamId = u.TeamId,
                 Role = u.Role
             }).ToList();
 
@@ -139,47 +143,134 @@ namespace Template.Web.Areas.Example.TeamMembers
         }
 
         [HttpGet]
+        public virtual async Task<IActionResult> GetAvailableUsersWithoutTeamManager()
+        {
+            var teamMembers = await _sharedService.Query(new TeamMembersIndexQuery
+            {
+                IdCurrentTeamMember = Guid.Empty,
+                Paging = null
+            });
+
+            var allUsers = await _sharedService.Query(new UsersIndexQuery
+            {
+                IdCurrentUser = Guid.Empty,
+                Paging = null
+            });
+
+            var managerIds = teamMembers.TeamMembers.Where(tm => tm.IsManager).Select(tm => tm.UserId).ToHashSet();
+
+            var availableUsers = allUsers.Users
+                .Where(u => !managerIds.Contains(u.Id))
+                .Select(u => new
+                {
+                    id = u.Id,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                    teamId = u.TeamId,
+                    email = u.Email
+                })
+                .ToList();
+
+            return Json(availableUsers);
+        }
+
+        [HttpGet]
         public virtual IActionResult New()
         {
             return RedirectToAction(Actions.Edit());
         }
 
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> AssignTeam([FromBody] AssignTeamRequest request)
+        [HttpGet]
+        public virtual async Task<IActionResult> GetAvailableUsersForManager(Guid teamId)
         {
+            var usersDto = await _sharedService.Query(new UsersIndexQuery());
 
-            if (!Guid.TryParse(request.UserId, out var userId) || !Guid.TryParse(request.TeamId, out var teamId))
-                return BadRequest("Parametri non validi.");
-
-            var existing = await _sharedService.Query(new TeamMembersIndexQuery
+            var teamMembersDto = await _sharedService.Query(new TeamMembersIndexQuery
             {
                 TeamId = Guid.Empty,
                 IdCurrentTeamMember = Guid.Empty,
                 Paging = null
             });
 
-            var existingMember = existing.TeamMembers.FirstOrDefault(tm => tm.UserId == userId);
+            var userIdsAlreadyInTeam = teamMembersDto.TeamMembers
+                .Where(tm => tm.TeamId == teamId)
+                .Select(tm => tm.UserId)
+                .ToHashSet();
+
+            var availableUsers = usersDto.Users
+                .Where(u => !userIdsAlreadyInTeam.Contains(u.Id))
+                .Select(u => new
+                {
+                    id = u.Id,
+                    firstName = u.FirstName,
+                    lastName = u.LastName,
+                    email = u.Email
+                });
+
+            return Json(availableUsers);
+        }
+
+        [HttpPost]
+        public virtual async Task<IActionResult> AssignTeam([FromBody] AssignTeamRequest request)
+        {
+            if (!Guid.TryParse(request.UserId, out var userId) || !Guid.TryParse(request.TeamId, out var teamId))
+                return BadRequest("Parametri non validi.");
+
+            var allAssignments = await _sharedService.Query(new TeamMembersIndexQuery
+            {
+                TeamId = Guid.Empty,
+                IdCurrentTeamMember = Guid.Empty,
+                Paging = null
+            });
+
+            var userAssignments = allAssignments.TeamMembers.Where(tm => tm.UserId == userId).ToList();
+            Console.WriteLine($"UserId: {request.UserId}, TeamId: {request.TeamId}, IsManager: {request.IsManager}");
+            bool isAlreadyAssignedToAnotherTeam = userAssignments
+            .Any(tm => tm.TeamId != teamId && tm.IsManager == request.IsManager);
+            if (isAlreadyAssignedToAnotherTeam)
+            {
+                var oldAssignment = userAssignments.FirstOrDefault(tm => tm.IsManager == request.IsManager);
+
+                if (oldAssignment != null)
+                {
+                    await _sharedService.DeleteTeamMember(oldAssignment.Id);
+                }
+            }
+            if (!request.IsManager)
+            {
+                var isManagerInTeam = userAssignments.Any(tm => tm.TeamId == teamId && tm.IsManager);
+                if (isManagerInTeam)
+                {
+                    return BadRequest("L'utente è già manager di questo team e non può essere assegnato come membro.");
+                }
+            }
+
+            if (request.IsManager)
+            {   
+                var isMemberInTeam = userAssignments.Any(tm => tm.TeamId == teamId && !tm.IsManager);
+                if (isMemberInTeam)
+                {
+                    return BadRequest("L'utente è già membro di questo team e non può essere assegnato come manager.");
+                }
+            }
+            var existingMember = userAssignments.FirstOrDefault(tm => tm.TeamId == teamId);
 
             var command = new AddOrUpdateTeamMemberCommand
             {
                 Id = existingMember?.Id,
                 UserId = userId,
                 TeamId = teamId,
-                IsManager = existingMember?.IsManager ?? false 
+                IsManager = request.IsManager
             };
-
-            Console.WriteLine("Chiamata per inserimento nuovo utente");
             await _sharedService.HandleTeamMember(command);
-            Console.WriteLine("Fine chiamata per inserimento nuovo utente");
-
-            return Ok("Team assegnato correttamente.");
+            return Ok("Team aggiornato.");
         }
 
         public class AssignTeamRequest
         {
             public string UserId { get; set; }
             public string TeamId { get; set; }
+            public bool IsManager { get; set; } = false;
         }
 
         [HttpGet]
@@ -210,6 +301,7 @@ namespace Template.Web.Areas.Example.TeamMembers
                 LastName = u.LastName,
                 NickName = u.NickName,
                 Email = u.Email,
+                TeamId = u.TeamId,
                 Role = u.Role
             }).ToList();
 

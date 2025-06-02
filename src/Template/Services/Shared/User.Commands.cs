@@ -15,7 +15,7 @@ namespace Template.Services.Shared
         public string NickName { get; set; }
         public string Role { get; set; }
         public string Password { get; set; }
-        public Guid? TeamId { get; set; }
+        public Guid TeamId { get; set; }
         public Guid TimesheetId { get; set; }
     }
 

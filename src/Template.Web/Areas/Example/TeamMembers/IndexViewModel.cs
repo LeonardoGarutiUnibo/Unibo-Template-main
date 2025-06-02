@@ -87,11 +87,11 @@ namespace Template.Web.Areas.Example.TeamMembers
         public Guid TeamMemberId { get; set; }
         public Guid UserId { get; set; }
         public string FirstName { get; set; }
+        public string TeamName { get; set; }
         public string LastName { get; set; }
         public string Email { get; set; }
         public string Role { get; set; }
         public Guid TeamId { get; set; }
-        public string TeamName { get; set; }
         public bool IsManager { get; set; }
     }
 }

@@ -28,8 +28,6 @@
     <div class="container mt-4" style="padding-left: 200px;">
         <h2>Gestione Utenti dei Team</h2>
 
-
-        <!-- Tabella utenti -->
         <div class="btn-group mb-3" role="group">
             <button type="button" class="btn btn-outline-primary" onclick="showSection('users')">👥 Mostra Utenti</button>
             <button type="button" class="btn btn-outline-secondary" onclick="showSection('teams')">🧑‍🤝‍🧑 Mostra Team</button>
@@ -43,7 +41,7 @@
                         <th>Nickname</th>
                         <th>Email</th>
                         <th>Ruolo</th>
-                        <th>Team</th> <!-- Nuova colonna -->
+                        <th>Team</th>
                         <th>Azioni</th>
                     </tr>
                 </thead>
@@ -58,18 +56,35 @@
                             <td>@user.Role</td>
 
                             <!-- Select per cambiare team -->
+                            @{
+                                var teamName = "-- Nessun team --";
+                                if (user.TeamId != null)
+                                {
+                                    foreach (var team in Model.TeamsWithUserCount)
+                                    {
+                                        Console.WriteLine("StampoTeam");
+                                        Console.WriteLine(user.TeamId);
+                                        Console.WriteLine(team.TeamId);
+                                        if (team.TeamId == user.TeamId)
+                                        {
+                                            teamName = team.TeamName;
+                                            break;
+                                        }
+                                    }
+                                }
+                            }
+                            <td>@teamName</td>
                             <td>
                                 <select class="form-select" id="teamSelect_@user.Id">
                                 @if (user.TeamId == null)
                                 {
                                     <option value="" selected>-- Nessun team --</option>
                                 }
-                            
                                 @foreach (var team in Model.TeamsWithUserCount)
                                 {
                                     if (user.TeamId == team.TeamId)
                                     {
-                                        <option value="@team.TeamId" selected>@team.TeamName</option>
+                                        <option value="@team.TeamId" selected>@team.TeamName</option>@: @team.TeamName
                                     }
                                     else
                                     {
@@ -126,6 +141,7 @@
                             <td>
                                 
                                 <button class="btn btn-outline-info btn-sm" onclick="showTeamUsers('@team.TeamId')">📄 Dettagli</button>
+                                <button class="btn btn-outline-success btn-sm" onclick="openAssignManagerModal('@team.TeamId')">👑 Assegna Manager</button>
                             </td>
                         </tr>
                     }
@@ -143,26 +159,26 @@
           </div>
           <div class="modal-body">
             <table>
-    <thead>
-        <tr>
-            <th>Nome</th>
-            <th>Email</th>
-            <th>Ruolo</th>
-            <th>Manager</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach(var member in Model.EnrichedTeamMembers)
-        {
-            <tr>
-                <td>@member.FirstName @member.LastName</td>
-                <td>@member.Email</td>
-                <td>@member.Role</td>
-                <td>@(member.IsManager ? "✔️" : "")</td>
-            </tr>
-        }
-    </tbody>
-</table>
+                <thead>
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Ruolo</th>
+                        <th>Manager</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var member in Model.EnrichedTeamMembers)
+                    {
+                        <tr>
+                            <td>@member.FirstName @member.LastName</td>
+                            <td>@member.Email</td>
+                            <td>@member.Role</td>
+                            <td>@(member.IsManager ? "✔️" : "")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
@@ -170,12 +186,82 @@
         </div>
       </div>
     </div>
+    <div class="modal fade" id="assignManagerModal" tabindex="-1" aria-labelledby="assignManagerModalLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">Assegna Team Manager</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <div class="modal-body">
+            <select id="availableUsers" class="form-select mb-3">
+              <!-- Popolato via JS -->
+            </select>
+            <button class="btn btn-primary" onclick="assignManager()">Assegna</button>
+          </div>
+        </div>
+      </div>
+    </div>
 
     <script>
+        let selectedTeamIdForManager = null;
+
+        async function openAssignManagerModal(teamId) {
+            selectedTeamIdForManager = teamId;
+
+            try {
+                const response = await fetch(`/Example/TeamMembers/GetAvailableUsersForManager?teamId=${teamId}`);
+                if (!response.ok) throw new Error('Errore nel recupero utenti disponibili');
+
+                const users = await response.json();
+                const select = document.getElementById("availableUsers");
+                select.innerHTML = "";
+
+                users.forEach(user => {
+                    const option = document.createElement("option");
+                    option.value = user.id;
+                    option.text = `${user.firstName} ${user.lastName} (${user.email})`;
+                    select.appendChild(option);
+                });
+
+                const modal = new bootstrap.Modal(document.getElementById('assignManagerModal'));
+                modal.show();
+            } catch (error) {
+                alert("Errore nel caricamento utenti: " + error.message);
+            }
+        }
+
+        async function assignManager() {
+            const userId = document.getElementById("availableUsers").value;
+
+            try {
+                const response = await fetch(`/Example/TeamMembers/AssignTeam`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        teamId: selectedTeamIdForManager,
+                        isManager: true
+                    })
+                });
+
+                if (!response.ok) throw new Error("Errore nell'assegnazione manager");
+
+                alert("Manager assegnato con successo!");
+                location.reload();
+
+            } catch (err) {
+                alert("Errore: " + err.message);
+            }
+        }
 
         function showSection(section) {
             const users = document.getElementById("usersSection");
             const teams = document.getElementById("teamsSection");
+
             if (section === "users") {
                 users.style.display = "block";
                 teams.style.display = "none";
@@ -186,7 +272,6 @@
         }
 
         async function showTeamUsers(teamId) {
-            // Fetch utenti del team da backend via API o endpoint (implementalo tu nel controller)
             try {
                 const response = await fetch(`/Example/TeamMembers/GetUsers?teamId=${teamId}`);
                 if (!response.ok) throw new Error('Errore nel recupero utenti');
@@ -206,8 +291,6 @@
                     `;
                     tbody.appendChild(tr);
                 });
-
-                // Mostra la modale usando Bootstrap 5
                 const modal = new bootstrap.Modal(document.getElementById('teamUsersModal'));
                 modal.show();
 
@@ -221,7 +304,7 @@
             const selectedTeamId = select.value;
 
             try {
-                const response = await fetch('/Example/TeamMembers/AssignTeam', {
+                const response = await fetch(`/Example/TeamMembers/AssignTeam`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -242,51 +325,6 @@
                 alert("Errore durante il salvataggio: " + err.message);
             }
         }
-
-        function showUserForm() {
-            document.getElementById("userForm").classList.add("active");
-
-            // Modalità creazione: resetta form e mostra password
-            document.getElementById("formTitle").textContent = "Crea Nuovo Utente";
-            document.getElementById("userId").value = "";
-            document.getElementById("firstName").value = "";
-            document.getElementById("lastName").value = "";
-            document.getElementById("nickName").value = "";
-            document.getElementById("email").value = "";
-            document.getElementById("password").value = "";
-            document.getElementById("passwordGroup").style.display = "block";
-            document.getElementById("isAdmin").checked = false;
-            document.getElementById("roleField").value = "User";
-        }
-
-        function hideUserForm() {
-            document.getElementById("userForm").classList.remove("active");
-        }
-
-        function editUser(id, firstName, lastName, nickName, email, role) {
-            showUserForm();
-
-            // Cambia titolo form in modalità modifica
-            document.getElementById("formTitle").textContent = "Modifica Utente";
-
-            // Imposta valori del form
-            document.getElementById("userId").value = id;
-            document.getElementById("firstName").value = firstName;
-            document.getElementById("lastName").value = lastName;
-            document.getElementById("nickName").value = nickName;
-            document.getElementById("email").value = email;
-
-            // Nascondi campo password in modifica e resetta valore
-            document.getElementById("passwordGroup").style.display = "none";
-            document.getElementById("password").value = "";
-
-            // Imposta checkbox Admin in base al ruolo
-            const isAdminChecked = role.toLowerCase() === "admin";
-            document.getElementById("isAdmin").checked = isAdminChecked;
-            document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
-        }
-
-        // Aggiorna roleField prima del submit
         document.getElementById("userFormForm").addEventListener("submit", function(event) {
             const isAdminChecked = document.getElementById("isAdmin").checked;
             document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";

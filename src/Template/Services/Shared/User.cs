@@ -24,7 +24,7 @@ namespace Template.Services.Shared
         public Guid TimesheetId { get; set;}
         [ForeignKey("TimesheetId")]
         public Timesheet Timesheet { get; set;}
-        public Guid? TeamId { get; set;}
+        public Guid TeamId { get; set;}
         [ForeignKey("TeamId")]
         public Team Team { get; set;}
 

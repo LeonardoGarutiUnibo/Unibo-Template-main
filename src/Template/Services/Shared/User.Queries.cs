@@ -24,7 +24,7 @@ namespace Template.Services.Shared
             public string FirstName { get; set; }
             public string LastName { get; set; }
             public string NickName { get; set; }
-
+            public Guid TeamId { get; set; }
             public string Email { get; set; }
             public string Role { get; set; }
         }
@@ -108,6 +108,7 @@ namespace Template.Services.Shared
                     FirstName = x.FirstName,
                     LastName  = x.LastName,
                     NickName  = x.NickName,
+                    TeamId  = x.TeamId,
                 })
                 .ToArrayAsync(),
                 Count = await queryable.CountAsync(),
@@ -140,7 +141,8 @@ namespace Template.Services.Shared
                         Role = x.Role,
                         FirstName = x.FirstName,
                         LastName = x.LastName,
-                        NickName = x.NickName
+                        NickName = x.NickName,
+                        TeamId = x.TeamId
                     })
                     .ToArrayAsync(),
                 Count = await queryable.CountAsync()
@@ -163,7 +165,8 @@ namespace Template.Services.Shared
                     Role = x.Role,
                     FirstName = x.FirstName,
                     LastName = x.LastName,
-                    NickName = x.NickName
+                    NickName = x.NickName,
+                    TeamId = x.TeamId
 
                 })
                 .FirstOrDefaultAsync();
@@ -191,7 +194,8 @@ namespace Template.Services.Shared
                 Role =  user.Role,
                 FirstName = user.FirstName,
                 LastName = user.LastName,
-                NickName = user.NickName
+                NickName = user.NickName,
+                TeamId = user.TeamId
             };
         }
     }
