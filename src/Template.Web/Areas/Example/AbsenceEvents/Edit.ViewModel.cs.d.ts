@@ -4,7 +4,7 @@ declare module Example.AbsenceEvents.Server {
 		UserId: any;
 		RequestDate: string;
 		StartEventDate : string; 
-        EndDateEvent : string; 
+        EndEventDate : string; 
         EventType : string;
 		EventState : string;
 

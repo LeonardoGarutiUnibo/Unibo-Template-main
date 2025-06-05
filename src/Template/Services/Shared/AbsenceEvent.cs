@@ -14,10 +14,10 @@ namespace Template.Services.Shared
         public Guid UserId { get; set; }
         [ForeignKey("UserId")]
         public User User { get; set; }
-        public string RequestDate { get; set; }
-        public string StartEventDate { get; set; }
+        public DateTime RequestDate { get; set; }
+        public DateTime StartEventDate { get; set; }
 
-        public string EndDateEvent { get; set; }
+        public DateTime EndEventDate { get; set; }
         public string EventType { get; set; }
         public string EventState { get; set; }
     }

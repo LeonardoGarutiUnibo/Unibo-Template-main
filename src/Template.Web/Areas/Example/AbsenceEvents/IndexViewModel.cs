@@ -63,7 +63,7 @@ namespace Template.Web.Areas.Example.AbsenceEvents
             this.UserId = absenceEventIndexDTO.UserId;
             this.RequestDate = absenceEventIndexDTO.RequestDate;
             this.StartEventDate = absenceEventIndexDTO.StartEventDate;
-            this.EndDateEvent = absenceEventIndexDTO.EndDateEvent;
+            this.EndEventDate = absenceEventIndexDTO.EndEventDate;
             this.EventType = absenceEventIndexDTO.EventType;
             this.EventState = absenceEventIndexDTO.EventState;
         }
@@ -71,10 +71,10 @@ namespace Template.Web.Areas.Example.AbsenceEvents
 
         public Guid Id { get; set; }
         public Guid UserId { get; set; }
-        public string RequestDate { get; set; }
-        public string StartEventDate { get; set; }
+        public DateTime RequestDate { get; set; }
+        public DateTime StartEventDate { get; set; }
 
-        public string EndDateEvent { get; set; }
+        public DateTime EndEventDate { get; set; }
         public string EventType { get; set; }
         public string EventState { get; set; }
     }

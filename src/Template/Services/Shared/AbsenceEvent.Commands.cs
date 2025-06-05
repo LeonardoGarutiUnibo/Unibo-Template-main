@@ -10,14 +10,13 @@ namespace Template.Services.Shared
         public Guid? Id { get; set; }
         
         public Guid UserId { get; set; }
-        public string RequestDate { get; set; }
-        public string StartEventDate { get; set; }
+        public DateTime RequestDate { get; set; }
+        public DateTime StartEventDate { get; set; }
 
-        public string EndDateEvent { get; set; }
+        public DateTime EndEventDate { get; set; }
         public string EventType { get; set; }
         public string EventState { get; set; }
     }
-    //TODO Da cambiare
 
     public partial class SharedService
     {
@@ -34,7 +33,7 @@ namespace Template.Services.Shared
                     UserId       = cmd.UserId,
                     RequestDate     = cmd.RequestDate,
                     StartEventDate  = cmd.StartEventDate,
-                    EndDateEvent    = cmd.EndDateEvent,
+                    EndEventDate    = cmd.EndEventDate,
                     EventType       = cmd.EventType,
                     EventState      = cmd.EventState,
                 };

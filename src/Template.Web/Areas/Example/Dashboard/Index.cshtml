@@ -1,248 +1,439 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Presenze</title>
-    <script src="https://cdn.jsdelivr.net/npm/vue@3/dist/vue.global.js"></script>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background: #f4f4f4;
-            margin: 0;
-            padding: 0;
-            text-align: center;
-        }
+@model Template.Web.Areas.Example.Dashboard.PresenzeViewModel
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f4f4;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+    }
 
-        .main-content {
-            margin-left: 270px;
-            padding: 20px;
-            width: calc(100% - 270px);
-        }
+    .selected-cell {
+        outline: 2px solid #0073e6;
+    }
+    .main-content {
+        margin-left: 270px;
+        padding: 20px;
+        width: calc(100% - 270px);
+    }
 
-        .container {
-            max-width: 1100px;
-            margin: auto;
-            background: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-        }
+    .container {
+        max-width: 80%;
+        margin: auto;
+        background: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 20px;
-        }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
 
-        th, td {
-            border: 1px solid #ccc;
-            padding: 10px;
-            text-align: center;
-        }
+    th, td {
+        border: 1px solid #ccc;
+        padding: 10px;
+        text-align: center;
+        position: relative; 
+    }
 
-        th {
-            background: #0073e6;
-            color: white;
-        }
+    th {
+        background: #0073e6;
+        color: white;
+    }
 
-        td:first-child {
-            font-weight: bold;
-            background: #e3f2fd;
-        }
+    td:first-child {
+        font-weight: bold;
+        background: #e3f2fd;
+        position: sticky;
+        left: 0;
+        z-index: 2;
+    }
 
-        .status {
-            cursor: pointer;
-            font-size: 22px;
-            transition: 0.3s;
-        }
+    .status {
+        cursor: pointer;
+        font-size: 22px;
+        transition: 0.3s;
+    }
 
-        .status:hover {
-            transform: scale(1.2);
-        }
+    .status:hover {
+        transform: scale(1.2);
+    }
 
-        .modal {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 20px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            display: none;
-        }
+    .intera { background: #28a745; color: white; }
+    .mezza { background: #ffc107; color: black; }
+    .assente { background: #dc3545; color: white; }
+    .smartworking { background: #17a2b8; color: white; }
 
-        .modal.active {
-            display: block;
-        }
+    .table-wrapper {
+        overflow-x: auto;
+        max-width: 100%;
+    }
 
-        .modal select, .modal button {
-            margin: 10px 0;
-            padding: 10px;
-            font-size: 16px;
-        }
+    #popup {
+        position: absolute;
+        background: white;
+        border: 1px solid #ccc;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        width: 300px;
+        z-index: 100;
+        display: none;
+        font-size: 14px;
+        text-align: left;
+    }
 
-        .intera { background: #28a745; color: white; }
-        .mezza { background: #ffc107; color: black; }
-        .assente { background: #dc3545; color: white; }
-        .smartworking { background: #17a2b8; color: white; }
+    #popup label {
+        display: block;
+        margin-top: 10px;
+        font-weight: 600;
+    }
 
-        .table-wrapper {
-            overflow-x: auto;
-            max-width: 100%;
-        }
-        /*Da controllare se funziona*/
-        th:first-child, tr:first-child {
-            position: sticky;
-            left: 0;
-            background: #f9f9f9;
-            z-index: 0;
-            padding-left: 1px;
-        }
-        th:first-child, td:first-child {
-            position: sticky;
-            left: 0;
-            background: #f9f9f9;
-            z-index: 0;
-            padding-left: 1px;
-        }
-    </style>
-</head>
-<body>
+    #popup input[type="datetime-local"], 
+    #popup select {
+        width: 100%;
+        padding: 6px 8px;
+        margin-top: 4px;
+        box-sizing: border-box;
+        border-radius: 4px;
+        border: 1px solid #aaa;
+    }
 
-    <div id="app" class="main-content">
-        <div class="container">
-            <h1>Gestione Presenze e Smart Working</h1>
-            <label for="month">Seleziona mese:</label> 
-            <input type="month" v-model="selectedMonth" v-on:change="generateCalendar">
-            <div class="table-wrapper">
+    #popup button {
+        margin-top: 12px;
+        padding: 8px 14px;
+        cursor: pointer;
+        border-radius: 5px;
+        border: none;
+        font-weight: 600;
+    }
+
+    #popup button.save {
+        background-color: #0073e6;
+        color: white;
+        margin-right: 8px;
+    }
+
+    #popup button.delete {
+        background-color: #dc3545;
+        color: white;
+        margin-right: 8px;
+    }
+
+    #popup button.cancel {
+        background-color: #ccc;
+        color: black;
+    }
+
+    .legenda {
+        margin-top: 20px;
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        font-weight: bold;
+    }
+
+    .legenda div {
+        padding: 6px 12px;
+        border-radius: 4px;
+    }
+</style>
+
+<div class="main-content">
+    <div class="container">
+        <h1>Gestione Presenze e Smart Working</h1>
+
+        <form method="get">
+            @Html.AntiForgeryToken()
+            <label for="startMonth">Da mese:</label>
+            <input type="month" id="startMonth" name="startMonth" value="@Model.StartMonth?.ToString("yyyy-MM")" />
+
+            <label for="endMonth">A mese:</label>
+            <input type="month" id="endMonth" name="endMonth" value="@Model.EndMonth?.ToString("yyyy-MM")" />
+
+            <button type="submit">Filtra</button>
+        </form>
+
+        <div class="table-wrapper" style="margin-bottom: 40px;">
+            <h2>Il tuo orario</h2>
             <table>
                 <thead>
                     <tr>
-                        <th style="color:black">Dipendente</th>
-                        <th v-for="day in daysInMonth" :key="day">{{ day }}</th>
+                        <th>Dipendente</th>
+                        @foreach (var day in Model.DaysInMonth)
+                        {
+                            <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                        }
                     </tr>
                 </thead>
                 <tbody>
-                    <tr v-for="(user, index) in myUser" :key="index">
-                        <td>{{ employee }}</td>
-                        <td v-for="day in daysInMonth" :key="day" class="status">
-                            <span :class="statusClasses[schedule[user][day] || '']">
-                                {{ statusIcons[schedule[user][day] || ''] }}
-                            </span>
-                        </td>
+                    <tr>
+                        <td>@Model.CurrentUserSchedule.Name</td>
+                        @foreach (var day in Model.DaysInMonth)
+                        {
+                            Console.WriteLine( Model.CurrentUserSchedule.Schedule.Count);
+                            var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day] : "";
+                            var icon = Model.StatusIcons.GetValueOrDefault(status, "");
+                            var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
+                            <td class="status-cell"
+                                data-user="@Model.CurrentUserSchedule.Id"
+                                data-day="@DateTime.Parse(day).ToString("yyyy-MM-dd")"
+                                onclick="openPopup(this)">
+                                <span class="status @cssClass">@icon</span>
+                            </td>
+                        }
                     </tr>
                 </tbody>
             </table>
-            <div class="table-wrapper">
-                <table>
-                    <thead>
-                        <tr>
-                            <th style="color:black">Dipendente</th>
-                            <th v-for="day in daysInMonth" :key="day">{{ day }}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(user, index) in users" :key="index">
-                            <td>{{ user }}</td> <!-- qui user è semplicemente il nome -->
-                            <td v-for="day in daysInMonth" :key="day" class="status" v-on:click="openPopup(user, day)">
-                                <span :class="statusClasses[schedule[user]?.[day] || '']">
-                                    {{ statusIcons[schedule[user]?.[day] || ''] }}
-                                </span>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
         </div>
-         <div class="legenda"></div>
-                <div class="intera">● Giornata intera</div>
-                <div class="mezza">◐ Mezza giornata</div>
-                <div class="smartworking">🏠 Smart Working</div>
-                <div class="assente">✖ Assente</div>
-            </div>
 
-        <div v-if="showPopup" class="modal active">
-            <h3>Seleziona stato per {{ popupEmployee }} - Giorno {{ popupDay }}</h3>
-            <select v-model="selectedStatus">
-                <option value="">-- Scegli --</option>
-                <option value="intera">Giornata intera</option>
-                <option value="mezza">Mezza giornata</option>
-                <option value="assente">Assente</option>
-                <option value="smartworking">Smart Working</option>
-            </select>
-            <button v-on:click="saveStatus">Salva</button>
-            <button v-on:click="deleteStatus">Elimina richiesta</button>
-            <button v-on:click="closePopup">Annulla</button>
+        <div class="table-wrapper">
+            <h2>Team</h2>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Dipendente</th>
+                        @foreach (var day in Model.DaysInMonth)
+                        {
+                            <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var user in Model.Users)
+                    {
+                        <tr>
+                            <td>@user.Name</td>
+                            @foreach (var day in Model.DaysInMonth)
+                            {
+                                var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
+                                var icon = Model.StatusIcons.GetValueOrDefault(status, "");
+                                var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
+                                <td class="status-cell"
+                                    data-user="@Model.CurrentUserSchedule.Id"
+                                    data-day="@DateTime.Parse(day).ToString("yyyy-MM-dd")">
+                                    <span class="status @cssClass">@icon</span>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="legenda">
+            <div class="intera">● Giornata intera</div>
+            <div class="mezza">◐ Mezza giornata</div>
+            <div class="smartworking">🏠 Smart Working</div>
+            <div class="assente">✖ Assente</div>
         </div>
     </div>
+</div>
 
-    <script>
-        const { createApp } = Vue;
+<div id="popup">
+    <label>Data e ora inizio:</label>
+    <input type="datetime-local" id="startDateTime" />
 
-        createApp({
-    data() {
-        return {
-            selectedMonth: new Date().toISOString().slice(0, 7),
-            users: [],  // nome uniforme
-            daysInMonth: [],
-            schedule: {},
-            statusIcons: { "": "", "intera": "●", "mezza": "◐", "assente": "✖", "smartworking": "🏠" },
-            statusClasses: { "": "", "intera": "intera", "mezza": "mezza", "assente": "assente", "smartworking": "smartworking" },
-            showPopup: false,
-            popupEmployee: "",
-            popupDay: "",
-            selectedStatus: ""
-        };
-    },
-    methods: {
-        async fetchData() {
-            try {
-                let response = await fetch('/api/timesheets'); // API simulata
-                let data = await response.json();
-                this.users = data.map(ts => ts.Name);
-                this.schedule = data.reduce((acc, ts) => {
-                    acc[ts.Name] = ts.WeekDays;
-                    return acc;
-                }, {});
-            } catch (error) {
-                console.error("Errore nel caricamento dei dati", error);
-            }
-        },
-        generateCalendar() {
-            let [year, monthNum] = this.selectedMonth.split('-');
-            let daysCount = new Date(year, monthNum, 0).getDate();
-            this.daysInMonth = Array.from({ length: daysCount }, (_, i) => (i + 1).toString());
-        },
-        openPopup(employee, day) {
-            this.popupEmployee = employee;
-            this.popupDay = day;
-            this.selectedStatus = this.schedule[employee]?.[day] || "";
-            this.showPopup = true;
-        },
-        closePopup() {
-            this.showPopup = false;
-        },
-        saveStatus() {
-            if (!this.schedule[this.popupEmployee]) {
-                this.schedule[this.popupEmployee] = {};
-            }
-            this.schedule[this.popupEmployee][this.popupDay] = this.selectedStatus;
-            this.closePopup();
-        },
-        deleteStatus() {
-            if (this.schedule[this.popupEmployee]) {
-                this.schedule[this.popupEmployee][this.popupDay] = "";
-            }
-            this.closePopup();
-        }
-    },
-    mounted() {
-        this.fetchData();
-        this.generateCalendar();
+    <label>Data e ora fine:</label>
+    <input type="datetime-local" id="endDateTime" />
+
+    <label>Tipo evento:</label>
+    <select id="eventType">
+        <option value="">-- Scegli --</option>
+        <option value="intera">Giornata intera</option>
+        <option value="mezza">Mezza giornata</option>
+        <option value="assente">Assente</option>
+        <option value="smartworking">Smart Working</option>
+    </select>
+
+    <div style="text-align: right; margin-top: 12px;">
+        <button class="save" onclick="saveStatus()" disabled id="saveBtn">Salva</button>
+        <button class="delete" onclick="deleteStatus()">Elimina</button>
+        <button class="cancel" onclick="closePopup()">Annulla</button>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    let currentUserId = null;
+    let currentDay = null;
+    const popup = document.getElementById('popup');
+
+    function openPopup(cell) {
+        document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
+        cell.classList.add('selected-cell');
+        currentUserId = cell.getAttribute('data-user');
+        currentDay = cell.getAttribute('data-day');
+
+        const rect = cell.getBoundingClientRect();
+        popup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+        popup.style.left = (window.scrollX + rect.left) + 'px';
+
+        const dayISO = currentDay;
+        const defaultStart = dayISO + 'T09:00';
+        const defaultEnd = dayISO + 'T17:00';
+
+        document.getElementById('startDateTime').value = defaultStart;
+        document.getElementById('endDateTime').value = defaultEnd;
+        document.getElementById('eventType').value = '';
+
+        updateTimeFields();
+
+        popup.style.display = 'block';
     }
-}).mount("#app");
-    </script>
-</body>
-</html>
+
+    function updateTimeFields() {
+        const startInput = document.getElementById('startDateTime');
+        const endInput = document.getElementById('endDateTime');
+
+        const startDate = startInput.value.substring(0, 10);
+        const endDate = endInput.value.substring(0, 10);
+
+        if (startDate === endDate) {
+            startInput.disabled = false;
+            endInput.disabled = false;
+        } else {
+            startInput.disabled = false;
+            endInput.disabled = false;
+
+            const newStart = startDate + 'T09:00';
+            const newEnd = endDate + 'T17:00';
+            startInput.value = newStart;
+            endInput.value = newEnd;
+
+            startInput.addEventListener('input', fixStartTimeIfDateDiffers);
+            endInput.addEventListener('input', fixEndTimeIfDateDiffers);
+        }
+    }
+
+    function fixStartTimeIfDateDiffers() {
+        const startInput = document.getElementById('startDateTime');
+        const endInput = document.getElementById('endDateTime');
+        const startDate = startInput.value.substring(0, 10);
+        const endDate = endInput.value.substring(0, 10);
+
+        if (startDate !== endDate) {
+            startInput.value = startDate + 'T09:00';
+        }
+    }
+
+    function fixEndTimeIfDateDiffers() {
+        const startInput = document.getElementById('startDateTime');
+        const endInput = document.getElementById('endDateTime');
+        const startDate = startInput.value.substring(0, 10);
+        const endDate = endInput.value.substring(0, 10);
+
+        if (startDate !== endDate) {
+            endInput.value = endDate + 'T17:00';
+        }
+    }
+
+    document.getElementById('startDateTime').addEventListener('change', updateTimeFields);
+    document.getElementById('endDateTime').addEventListener('change', updateTimeFields);
+
+    const eventTypeSelect = document.getElementById('eventType');
+    const saveButton = document.getElementById('saveBtn');
+
+    eventTypeSelect.addEventListener('change', function() {
+        if (eventTypeSelect.value === '') {
+            saveButton.disabled = true;
+        } else {
+            saveButton.disabled = false;
+        }
+    });
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closePopup();
+    });
+
+    function closePopup() {
+        popup.style.display = 'none';
+        document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
+        popup.style.display = 'none';
+        currentUserId = null;
+        currentDay = null;
+    }
+
+    async function saveStatus() {
+    const start = document.getElementById('startDateTime').value;
+    const end = document.getElementById('endDateTime').value;
+    const type = document.getElementById('eventType').value;
+
+    if (!start || !end || !type) {
+        alert('Compila tutti i campi prima di salvare.');
+        return;
+    }
+
+    if (new Date(start) > new Date(end)) {
+        alert('La data/ora di inizio deve essere precedente a quella di fine.');
+        return;
+    }
+
+    try {
+        const response = await fetch('/Example/Dashboard/SaveAbsenceEvent', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            },
+            body: JSON.stringify({
+                StartEventDate: start,
+                EndEventDate: end,
+                EventType: type
+            })
+        });
+
+        if (!response.ok) {
+            const errorText = await response.text();
+            alert('Errore durante il salvataggio: ' + errorText);
+            return;
+        }
+
+        const result = await response.json();
+        alert(result.message);
+
+        closePopup();
+
+        window.location.reload();
+
+    } catch (error) {
+        alert('Errore di rete o server: ' + error.message);
+    }
+}
+
+    function deleteStatus() {
+        alert(`Elimina evento per utente ${currentUserId}, giorno ${currentDay}`);
+        closePopup();
+    }
+
+    document.addEventListener('click', function(event) {
+        if (!popup.contains(event.target) && !event.target.classList.contains('status') && !event.target.closest('.status-cell')) {
+            closePopup();
+        }
+    });
+    document.addEventListener('DOMContentLoaded', () => {
+        const events = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Events));
+        const statusIcons = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusIcons));
+        const statusClasses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusClasses));
+
+        events.forEach(event => {
+            const userId = event.UserId;
+            const start = new Date(event.StartEventDate);
+            const end = new Date(event.EndEventDate);
+            const eventType = event.EventType;
+
+            for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+                const dayStr = d.toISOString().substring(0,10);
+                const cell = document.querySelector(`td.status-cell[data-user='${userId}'][data-day='${dayStr}']`);
+                if (cell) {
+                    const icon = statusIcons[eventType] || '';
+                    const cssClass = statusClasses[eventType] || '';
+                    cell.innerHTML = `<span class="status ${cssClass}">${icon}</span>`;
+                }
+            }
+        });
+    });
+</script>
+}
