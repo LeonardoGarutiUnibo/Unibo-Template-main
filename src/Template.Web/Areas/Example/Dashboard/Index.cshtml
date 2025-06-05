@@ -174,7 +174,6 @@
                         <td>@Model.CurrentUserSchedule.Name</td>
                         @foreach (var day in Model.DaysInMonth)
                         {
-                            Console.WriteLine( Model.CurrentUserSchedule.Schedule.Count);
                             var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day] : "";
                             var icon = Model.StatusIcons.GetValueOrDefault(status, "");
                             var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");

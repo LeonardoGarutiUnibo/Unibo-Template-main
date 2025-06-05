@@ -1,0 +1,105 @@
+
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="utf-8">
+    <title>Gestione Timesheet</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <style>
+        .fixed-overlay {
+            position: fixed;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
+            border-radius: 8px;
+            display: none;
+            z-index: 999;
+        }
+
+        .form-container {
+            text-align: center;
+        }
+
+        .fixed-overlay.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4" style="padding-left: 200px;">
+        <h2>Gestione Timesheet</h2>
+        <div class="mb-3">
+            <button class="btn btn-primary">Nome timesheet</button>
+            <button class="btn btn-secondary">Ricerca</button>
+            <button class="btn btn-success" onclick="showTimesheetForm()">+ Nuovo Timesheet</button>
+        </div>
+        <div id="timesheetForm" class="fixed-overlay">
+        </div>
+    </div>
+</body>
+</html>
+
+<script>
+    function deleteTimesheet(id) {
+        if (confirm("Sei sicuro di voler cancellare questo timesheet?")) {
+            fetch(`/Example/Timesheets/Delete`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                },
+                body: JSON.stringify({ id: id })
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url;
+                } else {
+                    alert("Errore nella cancellazione");
+                }
+            });
+        }
+    }
+    function showTimesheetForm() {
+        document.getElementById("timesheetForm").classList.add("active");
+    }
+
+    function hideTimesheetForm() {
+        document.getElementById("timesheetForm").classList.remove("active");
+    }
+
+    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+const selectedDays = [];
+
+function showTimesheetForm() {
+    document.getElementById("timesheetForm").classList.add("active");
+}
+
+function hideTimesheetForm() {
+    document.getElementById("timesheetForm").classList.remove("active");
+}
+
+function saveTimesheet(event) {
+    event.preventDefault();
+
+    let name = document.getElementById("timesheetName").value;
+    let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
+    let days = Array.from(checkboxes).map(cb => cb.value);
+
+    if (name && days.length > 0) {
+        let daysIndices = days;
+        let result = daysIndices.join("-");
+
+        document.getElementById("weekDaysEncoded").value = result;
+
+        document.getElementById("timesheetName").value = name;
+
+        event.target.closest("form").submit();
+    } else {
+        alert("Compila tutti i campi!");
+    }
+}
+</script>
