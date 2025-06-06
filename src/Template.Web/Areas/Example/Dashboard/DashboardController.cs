@@ -62,8 +62,6 @@ namespace Template.Web.Areas.Example.Dashboard
         var currentUser = await _sharedService.Query(new UserDetailQuery { Id = userId });
         var users = await _sharedService.Query(new UsersIndexQuery { IdCurrentUser = userId });
 
-        Console.WriteLine(currentUser.FirstName +" " + currentUser.LastName + " " + " " + currentUser.Id);
-        Console.WriteLine(users.Count);
 
         var otherUsers = users.Users
             .Where(u => u.Id != currentUser.Id)

@@ -78,7 +78,7 @@
                     <a asp-area="Example" asp-controller="TeamMembers" asp-action="Index" style="display: flex; justify-content: center;">Gestione Utenti Team</a>
                 }
                 <a asp-area="Example" asp-controller="MyRequests" asp-action="Index" style="display: flex; justify-content: center;">Le mie richieste</a>
-                <a href="#" style="display: flex; justify-content: center;">Gestione Richieste</a>
+                <a asp-area="Example" asp-controller="Requests" asp-action="Index" style="display: flex; justify-content: center;">Gestione Richieste</a>
             </div>
         }
         @RenderSection("pageTitle", false)

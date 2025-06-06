@@ -30,6 +30,8 @@ namespace Template.Services.Shared
     public class TeamMembersIndexQuery
     {
         public Guid TeamId { get; set; }
+        public Guid UserId { get; set; }
+        public bool IsManager { get; set; }
         public Guid IdCurrentTeamMember { get; set; }
         public string Filter { get; set; }
 
@@ -133,6 +135,34 @@ namespace Template.Services.Shared
                     IsManager = x.IsManager
                 })
                 .FirstOrDefaultAsync();
+        }
+
+        public async Task<TeamMemberDetailDTO> QueryTeamMemberByUserIdAndRole(Guid userId, bool isManager)
+        {
+            return await _dbContext.TeamMembers
+                .Where(x => x.UserId == userId && x.IsManager == isManager)
+                .Select(x => new TeamMemberDetailDTO
+                {
+                    Id = x.Id,
+                    UserId = x.UserId,
+                    TeamId = x.TeamId,
+                    IsManager = x.IsManager
+                })
+                .FirstOrDefaultAsync(); // restituisce una sola riga
+        }
+
+        public async Task<List<TeamMemberDetailDTO>> QueryTeamMemberUsers(Guid teamId, bool isManager)
+        {
+            return await _dbContext.TeamMembers
+                .Where(x => x.TeamId == teamId && x.IsManager == isManager)
+                .Select(x => new TeamMemberDetailDTO
+                {
+                    Id = x.Id,
+                    UserId = x.UserId,
+                    TeamId = x.TeamId,
+                    IsManager = x.IsManager
+                })
+                .ToListAsync(); // <-- esegue la query e restituisce la lista
         }
     }
 }

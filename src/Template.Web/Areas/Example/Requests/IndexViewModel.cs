@@ -7,7 +7,7 @@ using Template.Services.Shared;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Template.Web.Areas.Example.Dashboard
+namespace Template.Web.Areas.Example.Requests
 {
     public class UserIndexViewModel
     {
@@ -15,6 +15,7 @@ namespace Template.Web.Areas.Example.Dashboard
 
         // Aggiungi la lista di utenti
         public List<UserViewModel> Users { get; set; } = new List<UserViewModel>();
+        public List<AbsenceEventViewModel> Absences { get; set; } = new();
     }
 
     public class UserViewModel
@@ -33,10 +34,14 @@ namespace Template.Web.Areas.Example.Dashboard
 
     public class AbsenceEventViewModel
     {
+        public Guid Id { get; set; }
         public Guid UserId { get; set; }
+        public DateTime RequestDate { get; set; }
         public DateTime StartEventDate { get; set; }
         public DateTime EndEventDate { get; set; }
         public string EventType { get; set; }
+        public string EventState { get; set; }
+        public string FullName { get; set; }
     }
 
     public class PresenzeViewModel
@@ -55,7 +60,7 @@ namespace Template.Web.Areas.Example.Dashboard
             ["intera"] = "●",
             ["mezza"] = "◐",
             ["assente"] = "✖",
-            ["smartworking"] = "🏠︎" //◐ ⚪  ◧◻️
+            ["smartworking"] = "🏠︎"
         };
         public Dictionary<string, string> StatusClasses { get; set; } = new()
         {

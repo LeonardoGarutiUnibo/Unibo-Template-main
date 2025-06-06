@@ -125,6 +125,7 @@ namespace Template.Web
                 endpoints.MapAreaControllerRoute("Example", "TeamMembers", "Example/{controller=TeamMembers}/{action=Index}/{id?}");
                 endpoints.MapAreaControllerRoute("Example", "AbsenceEvents", "Example/{controller=AbsenceEvents}/{action=Index}/{id?}");
                 endpoints.MapAreaControllerRoute("Example", "MyRequests", "Example/{controller=MyRequests}/{action=Index}/{id?}");
+                endpoints.MapAreaControllerRoute("Example", "Requests", "Example/{controller=Requests}/{action=Index}/{id?}");
                 endpoints.MapControllerRoute("default", "{controller=Login}/{action=Login}");
             });
         }

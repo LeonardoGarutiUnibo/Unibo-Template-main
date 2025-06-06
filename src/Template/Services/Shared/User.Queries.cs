@@ -198,5 +198,13 @@ namespace Template.Services.Shared
                 TeamId = user.TeamId
             };
         }
+
+        public async Task<Dictionary<Guid, string>> QueryUserFullNamesByIds(List<Guid> userIds)
+        {
+            return await _dbContext.Users
+                .Where(x => userIds.Contains(x.Id))
+                .Select(x => new { x.Id, FullName = x.FirstName + " " + x.LastName })
+                .ToDictionaryAsync(x => x.Id, x => x.FullName);
+        }
     }
 }
