@@ -1,9 +1,8 @@
-
 <!DOCTYPE html>
 <html lang="it">
 <head>
     <meta charset="utf-8">
-    <title>Gestione Timesheet</title>
+    <title>Gestione Team</title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <style>
         .fixed-overlay {
@@ -32,21 +31,37 @@
 <body>
     <div class="container mt-4" style="padding-left: 200px;">
         <h2>Le mie richieste</h2>
-        <div class="mb-3">
-            <button class="btn btn-primary">Nome timesheet</button>
-            <button class="btn btn-secondary">Ricerca</button>
-            <button class="btn btn-success" onclick="showTimesheetForm()">+ Nuovo Timesheet</button>
-        </div>
-        <div id="timesheetForm" class="fixed-overlay">
-        </div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Data richiesta</th>
+                    <th>Inizio</th>
+                    <th>Fine</th>
+                    <th>Tipo</th>
+                    <th>Stato</th>
+                </tr>
+            </thead>
+            <tbody>
+            @foreach (var item in Model.AbsenceEvents)
+            {
+                <tr>
+                    <td>@item.RequestDate.ToShortDateString()</td>
+                    <td>@item.StartEventDate.ToShortDateString()</td>
+                    <td>@item.EndEventDate.ToShortDateString()</td>
+                    <td>@item.EventType</td>
+                    <td>@item.EventState</td>
+                </tr>
+            }
+            </tbody>
+        </table>
     </div>
 </body>
 </html>
 
 <script>
-    function deleteTimesheet(id) {
-        if (confirm("Sei sicuro di voler cancellare questo timesheet?")) {
-            fetch(`/Example/Timesheets/Delete`, {
+   function deleteTeam(id) {
+        if (confirm("Sei sicuro di voler cancellare questo team?")) {
+            fetch(`/Example/Teams/Delete`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,41 +78,35 @@
             });
         }
     }
-    function showTimesheetForm() {
-        document.getElementById("timesheetForm").classList.add("active");
+
+    function editTeam(id) {
+        alert("Modifica team ID: " + id);
+    }
+    function showTeamForm() {
+        document.getElementById("teamForm").classList.add("active");
     }
 
-    function hideTimesheetForm() {
-        document.getElementById("timesheetForm").classList.remove("active");
+    function hideTeamForm() {
+        document.getElementById("teamForm").classList.remove("active");
     }
 
     const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
 const selectedDays = [];
 
-function showTimesheetForm() {
-    document.getElementById("timesheetForm").classList.add("active");
+function showTeamForm() {
+    document.getElementById("teamForm").classList.add("active");
 }
 
-function hideTimesheetForm() {
-    document.getElementById("timesheetForm").classList.remove("active");
+function hideTeamForm() {
+    document.getElementById("teamForm").classList.remove("active");
 }
 
-function saveTimesheet(event) {
-    event.preventDefault();
+function saveTeam() {
+    let name = document.getElementById("teamName").value;
 
-    let name = document.getElementById("timesheetName").value;
-    let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
-    let days = Array.from(checkboxes).map(cb => cb.value);
-
-    if (name && days.length > 0) {
-        let daysIndices = days;
-        let result = daysIndices.join("-");
-
-        document.getElementById("weekDaysEncoded").value = result;
-
-        document.getElementById("timesheetName").value = name;
-
-        event.target.closest("form").submit();
+    if (name.length > 0) {
+        alert(`Team creato!\nNome: ${name}`);
+        hideTeamForm();
     } else {
         alert("Compila tutti i campi!");
     }

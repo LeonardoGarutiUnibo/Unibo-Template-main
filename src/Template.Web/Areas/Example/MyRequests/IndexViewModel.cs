@@ -14,6 +14,7 @@ namespace Template.Web.Areas.Example.MyRequests
         public string MessaggioBenvenuto { get; set; }
 
         // Aggiungi la lista di utenti
+        public List<AbsenceEventsIndexDTO.AbsenceEvent> AbsenceEvents { get; set; } = new();
         public List<UserViewModel> Users { get; set; } = new List<UserViewModel>();
     }
 

@@ -24,7 +24,24 @@ namespace Template.Web.Areas.Example.MyRequests
         [HttpGet]
         public virtual async Task<IActionResult> Index()
         {
-            var model = new UserIndexViewModel();
+            var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if (!Guid.TryParse(userIdClaim, out var userId))
+                return Unauthorized();
+
+            // Prepara la query per ottenere gli absence event dell'utente corrente
+            var absenceQuery = new AbsenceEventsIndexQuery
+            {
+                UserId = new List<Guid> { userId }
+            };
+
+            var absenceEventsDto = await _sharedService.Query(absenceQuery);
+
+            var model = new UserIndexViewModel
+            {
+                AbsenceEvents = absenceEventsDto.AbsenceEvents.ToList()
+            };
+
             return View(model);
         }
     }
