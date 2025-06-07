@@ -60,9 +60,9 @@ namespace Template.Web.Areas.Example.Dashboard
         public string CurrentUserTimesheetWeekDay { get; set; }
         public Dictionary<string, string> StatusIcons { get; set; } = new()
         {
-            ["Ferie Intera"] = "⚪",
+            ["Ferie Intera"] = "𒊹",
             ["Ferie Mezza"] = "◐",
-            ["Permessi Intera"] = "◻️",
+            ["Permessi Intera"] = "■",
             ["Permessi Mezza"] = "◧",
             ["smartworking"] = "🏠︎"
         };
@@ -81,6 +81,14 @@ namespace Template.Web.Areas.Example.Dashboard
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string TimesheetWeekDay { get; set; }
-        public Dictionary<string, string> Schedule { get; set; } = new();
+        public TimeSpan TimesheetStartTime { get; set; }
+        public TimeSpan TimesheetEndTime { get; set; }
+        public Dictionary<string, EventInfo> Schedule { get; set; } = new();
+    }
+
+    public class EventInfo
+    {
+        public string EventType { get; set; }
+        public string EventState { get; set; }
     }
 }

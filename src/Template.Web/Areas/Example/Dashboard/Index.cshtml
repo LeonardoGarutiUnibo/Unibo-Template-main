@@ -142,6 +142,10 @@
         font-weight: bold;
     }
 
+    #managerTable, #teamTable {
+        display: none;
+    }
+
     .legenda div {
         padding: 6px 12px;
         border-radius: 4px;
@@ -149,8 +153,21 @@
 
      .disabled-cell {
         background-color: #ddd !important;
+        cursor: default;
+    }
+
+    .status-container {
+        position: relative;
+        display: inline-block;
+    }
+
+    .overlay-icon {
+        position: absolute;
+        top: 0;
+        left: 0;
+        opacity: 0.5;
+        font-size: 1.2em;
         pointer-events: none;
-        cursor: not-allowed;
     }
 </style>
 
@@ -190,17 +207,37 @@
                             var dayOfWeek = (int)date.DayOfWeek;
                             var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
-                            var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day] : "";
+                            var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
+                            var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
+                            
                             var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                             var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
 
-                            <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                            bool hasEvent = !string.IsNullOrEmpty(icon);
+                            var clickableClass = hasEvent ? "disabled-cell" : "";
+                            var onclickAttr = hasEvent ? "" : "onclick=\"openPopup(this)\"";
+
+                            <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
                                 data-user="@Model.CurrentUserSchedule.Id"
+                                data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
+                                data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
                                 data-day="@date.ToString("yyyy-MM-dd")"
-                                onclick="openPopup(this)">
+                                @Html.Raw(isEnabled? "onclick=\"openPopup(this)\"" : "")>
                                 @if (isEnabled)
                                 {
-                                    <span class="status @cssClass">@icon</span>
+                                    <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                    @if (state == "Pending")
+                                    {
+                                        <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                    }
+                                    @if (state == "Rifiutato")
+                                    {
+                                        <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                    }
+                                    @if (state == "Approvato")
+                                    {
+                                        <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                    }
                                 }
                             </td>
                         }
@@ -211,8 +248,8 @@
 
         @if (Model.ManagerUser != null)
         {
-            <h2>Il mio Manager</h2>
-            <div class="table-wrapper">
+            <h2 class="toggle-table" data-target="managerTable">Il mio Manager</h2>
+            <div id="managerTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
                         <tr>
@@ -234,15 +271,34 @@
                                     var dayOfWeek = (int)date.DayOfWeek;
                                     var isEnabled = (managerUser.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
-                                    var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day] : "";
-                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
-                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
-                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                    var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventType : "";
+                                    var state = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventState : "";
+                                    Console.WriteLine("Il mio Manager" + state);
+                                    Console.WriteLine("Il mio Manager 2 " + status);
+                                    var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                                    var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+                                    bool hasEvent = !string.IsNullOrEmpty(icon);
+                                    var clickableClass = hasEvent ? "disabled-cell" : "";
+                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
                                         data-user="@managerUser.Id"
+                                        data-StartTime="@managerUser.TimesheetStartTime"
+                                        data-EndTime="@managerUser.TimesheetEndTime"
                                         data-day="@date.ToString("yyyy-MM-dd")">
-                                        @if (isEnabled && !string.IsNullOrEmpty(icon))
+                                        @if (isEnabled)
                                         {
-                                            <span class="status @cssClass">@icon</span>
+                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (state == "Pending")
+                                            {
+                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                            }
+                                            @if (state == "Rifiutato")
+                                            {
+                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                            }
+                                            @if (state == "Approvato")
+                                            {
+                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                            }
                                         }
                                     </td>
                                 }
@@ -255,8 +311,8 @@
 
         @if (Model.Users != null && Model.Users.Any())
         {
-            <div class="table-wrapper">
-                <h2>Team</h2>
+            <h2 class="toggle-table" data-target="teamTable">Il mio Team</h2>
+            <div id="teamTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
                         <tr>
@@ -278,15 +334,34 @@
                                     var dayOfWeek = (int)date.DayOfWeek;
                                     var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
-                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
-                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
-                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
-                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
+                                    var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    Console.WriteLine("Il mio Manager" + state);
+                                    Console.WriteLine("Il mio Manager 2 " + status);
+                                    var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                                    var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+                                    bool hasEvent = !string.IsNullOrEmpty(icon);
+                                    var clickableClass = hasEvent ? "disabled-cell" : "";
+                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
                                         data-user="@user.Id"
+                                        data-StartTime="@user.TimesheetStartTime"
+                                        data-EndTime="@user.TimesheetEndTime"
                                         data-day="@date.ToString("yyyy-MM-dd")">
-                                        @if (isEnabled && !string.IsNullOrEmpty(icon))
+                                        @if (isEnabled)
                                         {
-                                            <span class="status @cssClass">@icon</span>
+                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (state == "Pending")
+                                            {
+                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                            }
+                                            @if (state == "Rifiutato")
+                                            {
+                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                            }
+                                            @if (state == "Approvato")
+                                            {
+                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                            }
                                         }
                                     </td>
                                 }
@@ -296,10 +371,10 @@
                 </table>
             </div>
         }
-        @if (Model.IsManager)
+        @if (Model.IsManager && Model.TeamUsers.Count() >0)
         {
-            <h2>Tabella riservata ai manager</h2>
-            <div class="table-wrapper">
+            <h2 class="toggle-table" data-target="myTeamTable">Tabella riservata ai manager</h2>
+            <div id="myTeamTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
                         <tr>
@@ -321,16 +396,35 @@
                                     var dayOfWeek = (int)date.DayOfWeek;
                                     var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
-                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
-                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
-                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
-                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
+                                    var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    Console.WriteLine("user" + state);
+                                    Console.WriteLine("user 2 " + status);
+                                    var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                                    var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+                                    bool hasEvent = !string.IsNullOrEmpty(icon);
+                                    var clickableClass = hasEvent ? "disabled-cell" : "";
+                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
                                         data-user="@user.Id"
+                                        data-StartTime="@user.TimesheetStartTime"
+                                        data-EndTime="@user.TimesheetEndTime"
                                         data-day="@date.ToString("yyyy-MM-dd")">
-                                    @if (isEnabled && !string.IsNullOrEmpty(icon))
-                                    {
-                                        <span class="status @cssClass">@icon</span>
-                                    }
+                                        @if (isEnabled)
+                                        {
+                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (state == "Pending")
+                                            {
+                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                            }
+                                            @if (state == "Rifiutato")
+                                            {
+                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                            }
+                                            @if (state == "Approvato")
+                                            {
+                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                            }
+                                        }
                                     </td>
                                 }
                             </tr>
@@ -340,21 +434,21 @@
             </div>
         }
 
-        <div class="legenda">
-            <div class="intera">● Giornata intera</div>
-            <div class="mezza">◐ Mezza giornata</div>
-            <div class="smartworking">🏠 Smart Working</div>
-            <div class="assente">✖ Assente</div>
-        </div>
     </div>
 </div>
 
 <div id="popup">
     <label>Data e ora inizio:</label>
-    <input type="datetime-local" id="startDateTime" />
+    <input type="datetime-local"
+    min="@Model.CurrentUserSchedule.TimesheetStartTime" 
+    max="@Model.CurrentUserSchedule.TimesheetEndTime" 
+    id="startDateTime" />
 
     <label>Data e ora fine:</label>
-    <input type="datetime-local" id="endDateTime" />
+    <input type="datetime-local" 
+    min="@Model.CurrentUserSchedule.TimesheetStartTime" 
+    max="@Model.CurrentUserSchedule.TimesheetEndTime" 
+    id="endDateTime" />
 
     <label>Tipo evento:</label>
     <select id="eventType">
@@ -378,28 +472,44 @@
     const popup = document.getElementById('popup');
 
     function openPopup(cell) {
-        document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
-        cell.classList.add('selected-cell');
-        currentUserId = cell.getAttribute('data-user');
-        currentDay = cell.getAttribute('data-day');
+    document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
+    cell.classList.add('selected-cell');
+    currentUserId = cell.getAttribute('data-user');
+    CurrentUserTimesheetStartTime = cell.getAttribute('data-StartTime');
+    CurrentUserTimesheetEndTime = cell.getAttribute('data-EndTime');         
+    currentDay = cell.getAttribute('data-day');                          
 
-        const rect = cell.getBoundingClientRect();
-        popup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
-        popup.style.left = (window.scrollX + rect.left) + 'px';
+    const rect = cell.getBoundingClientRect();
+    popup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+    popup.style.left = (window.scrollX + rect.left) + 'px';
 
-        const dayISO = currentDay;
-        const defaultStart = dayISO + 'T09:00';
-        const defaultEnd = dayISO + 'T17:00';
+    const dayISO = currentDay;
+    const defaultStart = dayISO + "T" + CurrentUserTimesheetStartTime;
+    const defaultEnd = dayISO + "T" + CurrentUserTimesheetEndTime;
 
-        document.getElementById('startDateTime').value = defaultStart;
-        document.getElementById('endDateTime').value = defaultEnd;
-        document.getElementById('eventType').value = '';
+    const startInput = document.getElementById('startDateTime');
+    const endInput = document.getElementById('endDateTime');
 
-        updateTimeFields();
+    startInput.value = defaultStart;
+    startInput.min = defaultStart;   
+    endInput.value = defaultEnd;
+    endInput.min = defaultStart;   
 
-        popup.style.display = 'block';
+    document.getElementById('eventType').value = '';
+
+    updateTimeFields();
+
+    popup.style.display = 'block';
+}
+
+document.getElementById('startDateTime').addEventListener('input', function() {
+    const startVal = this.value;
+    const endInput = document.getElementById('endDateTime');
+    if (endInput.value < startVal) {
+        endInput.value = startVal;
     }
-
+    endInput.min = startVal;
+});
     function updateTimeFields() {
         const startInput = document.getElementById('startDateTime');
         const endInput = document.getElementById('endDateTime');
@@ -472,51 +582,76 @@
     }
 
     async function saveStatus() {
-    const start = document.getElementById('startDateTime').value;
-    const end = document.getElementById('endDateTime').value;
-    const type = document.getElementById('eventType').value;
+        const startValue = document.getElementById('startDateTime').value;
+        const start = new Date(startValue);
+        const endValue = document.getElementById('endDateTime').value;
+        const end = new Date(endValue);
+        var type = document.getElementById('eventType').value;
+        if (!startValue || !endValue || !type) {
+            alert('Compila tutti i campi prima di salvare.');
+            return;
+        }
+        
+        const dateStart = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+        const dateEnd = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+        const timeStart = new Date(1970, 0, 1, start.getHours(), start.getMinutes(), start.getSeconds());
+        const timeEnd = new Date(1970, 0, 1, end.getHours(), end.getMinutes(), end.getSeconds());
+        var [hours, minutes, seconds] = CurrentUserTimesheetStartTime.split(':').map(Number);
+        const userTimeStart = new Date(1970, 0, 1);
+        userTimeStart.setHours(hours, minutes, seconds, 0); 
 
-    if (!start || !end || !type) {
-        alert('Compila tutti i campi prima di salvare.');
-        return;
-    }
-
-    if (new Date(start) > new Date(end)) {
-        alert('La data/ora di inizio deve essere precedente a quella di fine.');
-        return;
-    }
-
-    try {
-        const response = await fetch('/Example/Dashboard/SaveAbsenceEvent', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
-            },
-            body: JSON.stringify({
-                StartEventDate: start,
-                EndEventDate: end,
-                EventType: type
-            })
-        });
-
-        if (!response.ok) {
-            const errorText = await response.text();
-            alert('Errore durante il salvataggio: ' + errorText);
+        var [hoursEnd, minutesEnd, secondsEnd] = CurrentUserTimesheetEndTime.split(':').map(Number);
+        const userTimeEnd = new Date(1970, 0, 1);
+        userTimeEnd.setHours(hoursEnd, minutesEnd, secondsEnd, 0);
+        if (start > end) {
+            alert('La data/ora di inizio deve essere precedente a quella di fine.');
             return;
         }
 
-        const result = await response.json();
-        alert(result.message);
-
-        closePopup();
-
-        window.location.reload();
-
-    } catch (error) {
-        alert('Errore di rete o server: ' + error.message);
+        if (dateStart.getTime() == dateEnd.getTime() && (timeStart < userTimeStart || timeStart > userTimeEnd || timeEnd > userTimeEnd || timeEnd < userTimeStart)) {
+            alert("L'orario inserito non è valido");
+            return;
+        }
+        else if (dateStart.getTime() == dateEnd.getTime() && ( timeStart >= userTimeStart && timeStart < userTimeEnd) || (timeEnd > userTimeStart && timeEnd <= userTimeEnd)) {
+            if ((timeStart > userTimeStart || timeEnd < userTimeEnd) && type != "smartworking" ){
+                type = type+" Mezza"
+            }
+            else if (type != "smartworking"){
+                type = type+" Intera"
+            }
+            
+        }
+        try {
+            const response = await fetch('/Example/Dashboard/SaveAbsenceEvent?cacheBust=' + new Date().getTime(), {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                },
+                body: JSON.stringify({
+                    StartEventDate: start,
+                    EndEventDate: end,
+                    EventType: type
+                })
+            });
+    
+            if (!response.ok) {
+                const errorText = await response.text();
+                alert('Errore durante il salvataggio: ' + errorText);
+                return;
+            }
+    
+            const result = await response.json();
+            alert(result.message);
+    
+            closePopup();
+    
+            window.location.reload();
+    
+        } catch (error) {
+            alert('Errore di rete o server: ' + error.message);
+        }
     }
-}
 
     function deleteStatus() {
         alert(`Elimina evento per utente ${currentUserId}, giorno ${currentDay}`);
@@ -532,13 +667,13 @@
         const events = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Events));
         const statusIcons = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusIcons));
         const statusClasses = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusClasses));
-
+    
         events.forEach(event => {
             const userId = event.UserId;
             const start = new Date(event.StartEventDate);
             const end = new Date(event.EndEventDate);
             const eventType = event.EventType;
-
+    
             for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                 const dayStr = d.toISOString().substring(0,10);
                 const cell = document.querySelector(`td.status-cell[data-user='${userId}'][data-day='${dayStr}']`);
@@ -568,5 +703,21 @@
             }
         });
     });
+
+    document.querySelectorAll('.toggle-table').forEach(header => {
+        header.style.cursor = 'pointer';
+
+        header.addEventListener('click', () => {
+          const targetId = header.getAttribute('data-target');
+          const tableDiv = document.getElementById(targetId);
+          if (!tableDiv) return;
+
+          if (tableDiv.style.display === 'none') {
+            tableDiv.style.display = 'block';
+          } else {
+            tableDiv.style.display = 'none';
+          }
+        });
+      });
 </script>
 }

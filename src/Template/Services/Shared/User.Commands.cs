@@ -54,7 +54,9 @@ namespace Template.Services.Shared
             user.LastName = cmd.LastName;
             user.NickName = cmd.NickName;
             user.Role = cmd.Role;
-            user.TeamId = cmd.TeamId;
+            if (cmd.TeamId != Guid.Parse("00000000-0000-0000-0000-000000000000")){
+                user.TeamId = cmd.TeamId;
+            }
             user.TimesheetId = cmd.TimesheetId;
 
             await _dbContext.SaveChangesAsync();

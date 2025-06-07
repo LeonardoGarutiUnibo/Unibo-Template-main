@@ -28,6 +28,8 @@ namespace Template.Services.Shared
             public string Email { get; set; }
             public string Role { get; set; }
             public string TimesheetWeekDay { get; set; }
+            public TimeSpan TimesheetStartTime { get; set; }
+            public TimeSpan TimesheetEndTime { get; set; }
         }
     }
 
@@ -55,6 +57,8 @@ namespace Template.Services.Shared
             public Guid TeamId { get; set; }
             public Guid TimesheetId { get; set; }
             public string TimesheetWeekDay { get; set; }
+            public TimeSpan TimesheetStartTime { get; set; }
+            public TimeSpan TimesheetEndTime { get; set; }
         }
     }
 
@@ -75,6 +79,8 @@ namespace Template.Services.Shared
         public Guid TeamId { get; set; }
         public Guid TimesheetId { get; set; }
         public string TimesheetWeekDay { get; set; }
+        public TimeSpan TimesheetStartTime { get; set; }
+        public TimeSpan TimesheetEndTime { get; set; }
     }
 
     public class CheckLoginCredentialsQuery
@@ -113,7 +119,9 @@ namespace Template.Services.Shared
                     LastName  = x.LastName,
                     NickName  = x.NickName,
                     TeamId  = x.TeamId,
-                    TimesheetWeekDay = x.Timesheet.WeekDay
+                    TimesheetWeekDay = x.Timesheet.WeekDay,   
+                    TimesheetStartTime = x.Timesheet.StartTime, 
+                    TimesheetEndTime = x.Timesheet.EndTime
                 })
                 .ToArrayAsync(),
                 Count = await queryable.CountAsync(),
@@ -150,7 +158,9 @@ namespace Template.Services.Shared
                         NickName = x.NickName,
                         TeamId = x.TeamId,
                         TimesheetId = x.TimesheetId,
-                        TimesheetWeekDay = x.Timesheet.WeekDay
+                        TimesheetWeekDay = x.Timesheet.WeekDay,
+                        TimesheetStartTime = x.Timesheet.StartTime, 
+                        TimesheetEndTime = x.Timesheet.EndTime
                     })
                     .ToArrayAsync(),
                 Count = await queryable.CountAsync()
@@ -177,7 +187,9 @@ namespace Template.Services.Shared
                 NickName = u.NickName,
                 TeamId = u.TeamId,
                 TimesheetId = u.TimesheetId,
-                TimesheetWeekDay = u.Timesheet.WeekDay
+                TimesheetWeekDay = u.Timesheet.WeekDay,
+                TimesheetStartTime = u.Timesheet.StartTime, 
+                TimesheetEndTime = u.Timesheet.EndTime
             })
     .FirstOrDefaultAsync();
         }

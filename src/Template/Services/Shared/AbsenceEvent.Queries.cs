@@ -37,6 +37,7 @@ namespace Template.Services.Shared
         public DateTime? StartEventDate { get; set; }
         public DateTime? EndEventDate { get; set; }
         public string EventType { get; set; }
+        public string EventState { get; set; }
         public List<Guid> UserId { get; set; }
     }
 
