@@ -19,7 +19,7 @@ namespace Template.Services.Shared
         public string LastName { get; set; }
         public string NickName { get; set; }
 
-        public string Role { get; set; } // e.g., Admin, User
+        public string Role { get; set; }
 
         public Guid TimesheetId { get; set;}
         [ForeignKey("TimesheetId")]

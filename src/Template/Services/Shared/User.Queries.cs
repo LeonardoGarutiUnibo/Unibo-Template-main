@@ -27,6 +27,7 @@ namespace Template.Services.Shared
             public Guid TeamId { get; set; }
             public string Email { get; set; }
             public string Role { get; set; }
+            public string TimesheetWeekDay { get; set; }
         }
     }
 
@@ -53,6 +54,7 @@ namespace Template.Services.Shared
             public string Role { get; set; }
             public Guid TeamId { get; set; }
             public Guid TimesheetId { get; set; }
+            public string TimesheetWeekDay { get; set; }
         }
     }
 
@@ -72,6 +74,7 @@ namespace Template.Services.Shared
         public string Password { get; set; }
         public Guid TeamId { get; set; }
         public Guid TimesheetId { get; set; }
+        public string TimesheetWeekDay { get; set; }
     }
 
     public class CheckLoginCredentialsQuery
@@ -100,6 +103,7 @@ namespace Template.Services.Shared
             return new UsersSelectDTO
             {
                 Users = await queryable
+                .Include(x => x.Timesheet)
                 .Select(x => new UsersSelectDTO.User
                 {
                     Id = x.Id,
@@ -109,6 +113,7 @@ namespace Template.Services.Shared
                     LastName  = x.LastName,
                     NickName  = x.NickName,
                     TeamId  = x.TeamId,
+                    TimesheetWeekDay = x.Timesheet.WeekDay
                 })
                 .ToArrayAsync(),
                 Count = await queryable.CountAsync(),
@@ -134,6 +139,7 @@ namespace Template.Services.Shared
             {
                 Users = await queryable
                     .ApplyPaging(qry.Paging)
+                    .Include(x => x.Timesheet)
                     .Select(x => new UsersIndexDTO.User
                     {
                         Id = x.Id,
@@ -142,7 +148,9 @@ namespace Template.Services.Shared
                         FirstName = x.FirstName,
                         LastName = x.LastName,
                         NickName = x.NickName,
-                        TeamId = x.TeamId
+                        TeamId = x.TeamId,
+                        TimesheetId = x.TimesheetId,
+                        TimesheetWeekDay = x.Timesheet.WeekDay
                     })
                     .ToArrayAsync(),
                 Count = await queryable.CountAsync()
@@ -157,19 +165,21 @@ namespace Template.Services.Shared
         public async Task<UserDetailDTO> Query(UserDetailQuery qry)
         {
             return await _dbContext.Users
-                .Where(x => x.Id == qry.Id)
-                .Select(x => new UserDetailDTO
-                {
-                    Id = x.Id,
-                    Email = x.Email,
-                    Role = x.Role,
-                    FirstName = x.FirstName,
-                    LastName = x.LastName,
-                    NickName = x.NickName,
-                    TeamId = x.TeamId
-
-                })
-                .FirstOrDefaultAsync();
+            .Where(u => u.Id == qry.Id)
+            .Include(u => u.Timesheet)
+            .Select(u => new UserDetailDTO
+            {
+                Id = u.Id,
+                Email = u.Email,
+                Role = u.Role,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                NickName = u.NickName,
+                TeamId = u.TeamId,
+                TimesheetId = u.TimesheetId,
+                TimesheetWeekDay = u.Timesheet.WeekDay
+            })
+    .FirstOrDefaultAsync();
         }
 
         /// <summary>

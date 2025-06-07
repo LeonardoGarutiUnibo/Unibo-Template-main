@@ -61,14 +61,38 @@ namespace Template.Web.Areas.Example.Dashboard
 
         var currentUser = await _sharedService.Query(new UserDetailQuery { Id = userId });
         var users = await _sharedService.Query(new UsersIndexQuery { IdCurrentUser = userId });
+        if (currentUser == null)
+{
+    return Unauthorized();
+}
 
-
-        var otherUsers = users.Users
+if (users == null || users.Users == null)
+{
+    return BadRequest("Errore nel recupero utenti");
+}
+        if (currentUser.TimesheetWeekDay != null){
+            Console.WriteLine("Valore");
+            Console.WriteLine(currentUser.TimesheetWeekDay);}
+        else{
+            Console.WriteLine("currentUser.TimesheetWeekDay è vuoto");
+        }
+        var allUsers = users.Users
             .Where(u => u.Id != currentUser.Id)
             .Select(u => new UserScheduleViewModel
             {
                 Id = u.Id,
                 Name = $"{u.FirstName} {u.LastName}",
+                TimesheetWeekDay = u.TimesheetWeekDay,
+                Schedule = new Dictionary<string, string>()
+            }).ToList();
+
+        var otherUsers = users.Users
+            .Where(u => u.Id != currentUser.Id && u.TeamId == currentUser.TeamId)
+            .Select(u => new UserScheduleViewModel
+            {
+                Id = u.Id,
+                Name = $"{u.FirstName} {u.LastName}",
+                TimesheetWeekDay = u.TimesheetWeekDay,
                 Schedule = new Dictionary<string, string>()
             }).ToList();
 
@@ -76,6 +100,7 @@ namespace Template.Web.Areas.Example.Dashboard
         {
             Id = currentUser.Id,
             Name = $"{currentUser.FirstName} {currentUser.LastName}",
+            TimesheetWeekDay = currentUser.TimesheetWeekDay,
             Schedule = new Dictionary<string, string>()
         };
 
@@ -86,9 +111,89 @@ namespace Template.Web.Areas.Example.Dashboard
             DaysInMonth = daysInRange,
             CurrentUserName = $"{currentUser.FirstName} {currentUser.LastName}",
             CurrentUserId = currentUser.Id,
+            CurrentUserTimesheetWeekDay = currentUser.TimesheetWeekDay,
             Users = otherUsers,
             CurrentUserSchedule = currentUserSchedule
         };
+
+        var managerInfo = await _sharedService.QueryTeamMemberByUserIdAndRole(currentUser.Id, true);
+        model.IsManager = managerInfo != null;
+        if (managerInfo != null){
+            Console.WriteLine("È un manager");
+            var usersInfo = await _sharedService.QueryTeamMemberUsers(managerInfo.TeamId, false);
+
+            var teamUserIds = usersInfo.Select(x => x.UserId).ToHashSet();
+        
+            var teamUsers = users.Users
+                .Where(u => teamUserIds.Contains(u.Id) && u.Id != currentUser.Id)
+                .Select(u => new UserScheduleViewModel
+                {
+                    Id = u.Id,
+                    Name = $"{u.FirstName} {u.LastName}",
+                    TimesheetWeekDay = u.TimesheetWeekDay,
+                    Schedule = new Dictionary<string, string>()
+                })
+                .ToList();
+        
+            model.TeamUsers = teamUsers;
+            if (usersInfo == null || !usersInfo.Any())
+            {
+                Console.WriteLine("Ancora nessun membro nel Team");
+            }
+
+            Console.WriteLine("Membri del team trovati " + usersInfo.Count);
+
+            var userIds = usersInfo.Select(x => x.UserId).ToList();
+
+            var userFullNames = await _sharedService.QueryUserFullNamesByIds(userIds);
+            var absencesResult = await _sharedService.Query(new AbsenceEventsIndexQuery
+            {
+                UserId = userIds
+            });
+
+            Console.WriteLine(userIds + " " + absencesResult.Count);
+
+            model.Absences = absencesResult.AbsenceEvents.Select(a => new AbsenceEventViewModel {
+                UserId = a.UserId,
+                StartEventDate = a.StartEventDate,
+                EndEventDate = a.EndEventDate,
+                EventType = a.EventType,
+                EventState = a.EventState
+            }).ToList();
+        }
+        else{
+            Console.WriteLine("Non è un manager");
+        }
+        var managerUserInfoList = await _sharedService.QueryTeamMemberUsers(currentUser.TeamId, true);
+        if (managerUserInfoList != null && managerUserInfoList.Any())
+        {
+            var managerUser = users.Users
+                .Where(u => u.Id == managerUserInfoList[0].UserId)
+                .Select(u => new UserScheduleViewModel
+                {
+                    Id = managerUserInfoList[0].UserId,
+                    Name = $"{u.FirstName} {u.LastName}",
+                    TimesheetWeekDay = u.TimesheetWeekDay,
+                    Schedule = new Dictionary<string, string>()
+                })
+                .ToList();
+            foreach (var user in users.Users)
+            {
+                Console.WriteLine($"Id: {user.Id}, Nome: {user.FirstName} {user.LastName}, TeamId: {user.TeamId}");
+            }
+            if (managerUser.Any())
+            {
+                model.ManagerUser = managerUser;
+            }
+            else
+            {
+                Console.WriteLine("Nessun utente manager trovato in users.Users");
+            }
+        }
+        else
+        {
+            Console.WriteLine("managerUserInfoList è nullo o vuoto");
+        }
 
         var query = new AbsenceEventsIndexQuery
         {
@@ -124,7 +229,6 @@ namespace Template.Web.Areas.Example.Dashboard
 
             var currentDate = evt.StartEventDate.Date;
             var eventEndDate = evt.EndEventDate.Date;
-
             while (currentDate <= eventEndDate)
             {
                 var key = currentDate.ToString("yyyy-MM-dd");

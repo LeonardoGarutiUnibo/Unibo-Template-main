@@ -1,5 +1,11 @@
 @model Template.Web.Areas.Example.Dashboard.PresenzeViewModel
 <style>
+.non-working-day {
+    background-color: #ddd !important;
+    color: #888 !important;
+    cursor: default !important;
+    pointer-events: none; /* disabilita il click */
+}
     body {
         font-family: Arial, sans-serif;
         background: #f4f4f4;
@@ -140,6 +146,12 @@
         padding: 6px 12px;
         border-radius: 4px;
     }
+
+     .disabled-cell {
+        background-color: #ddd !important;
+        pointer-events: none;
+        cursor: not-allowed;
+    }
 </style>
 
 <div class="main-content">
@@ -157,8 +169,8 @@
             <button type="submit">Filtra</button>
         </form>
 
+        <h2>Il tuo orario</h2>
         <div class="table-wrapper" style="margin-bottom: 40px;">
-            <h2>Il tuo orario</h2>
             <table>
                 <thead>
                     <tr>
@@ -174,14 +186,22 @@
                         <td>@Model.CurrentUserSchedule.Name</td>
                         @foreach (var day in Model.DaysInMonth)
                         {
+                            var date = DateTime.Parse(day);
+                            var dayOfWeek = (int)date.DayOfWeek;
+                            var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
                             var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day] : "";
-                            var icon = Model.StatusIcons.GetValueOrDefault(status, "");
-                            var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
-                            <td class="status-cell"
+                            var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                            var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+
+                            <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
                                 data-user="@Model.CurrentUserSchedule.Id"
-                                data-day="@DateTime.Parse(day).ToString("yyyy-MM-dd")"
+                                data-day="@date.ToString("yyyy-MM-dd")"
                                 onclick="openPopup(this)">
-                                <span class="status @cssClass">@icon</span>
+                                @if (isEnabled)
+                                {
+                                    <span class="status @cssClass">@icon</span>
+                                }
                             </td>
                         }
                     </tr>
@@ -189,39 +209,136 @@
             </table>
         </div>
 
-        <div class="table-wrapper">
-            <h2>Team</h2>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dipendente</th>
-                        @foreach (var day in Model.DaysInMonth)
-                        {
-                            <th>@DateTime.Parse(day).ToString("dd/MM")</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var user in Model.Users)
-                    {
+        @if (Model.ManagerUser != null)
+        {
+            <h2>Il mio Manager</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
                         <tr>
-                            <td>@user.Name</td>
+                            <th>Dipendente</th>
                             @foreach (var day in Model.DaysInMonth)
                             {
-                                var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
-                                var icon = Model.StatusIcons.GetValueOrDefault(status, "");
-                                var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
-                                <td class="status-cell"
-                                    data-user="@Model.CurrentUserSchedule.Id"
-                                    data-day="@DateTime.Parse(day).ToString("yyyy-MM-dd")">
-                                    <span class="status @cssClass">@icon</span>
-                                </td>
+                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
                             }
                         </tr>
-                    }
-                </tbody>
-            </table>
-        </div>
+                    </thead>
+                    <tbody>
+                        @foreach (var managerUser in Model.ManagerUser)
+                        {
+                            <tr>
+                                <td>@managerUser.Name</td>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var date = DateTime.Parse(day);
+                                    var dayOfWeek = (int)date.DayOfWeek;
+                                    var isEnabled = (managerUser.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
+                                    var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day] : "";
+                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
+                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
+                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                        data-user="@managerUser.Id"
+                                        data-day="@date.ToString("yyyy-MM-dd")">
+                                        @if (isEnabled && !string.IsNullOrEmpty(icon))
+                                        {
+                                            <span class="status @cssClass">@icon</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+
+        @if (Model.Users != null && Model.Users.Any())
+        {
+            <div class="table-wrapper">
+                <h2>Team</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Dipendente</th>
+                            @foreach (var day in Model.DaysInMonth)
+                            {
+                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.Users)
+                        {
+                            <tr>
+                                <td>@user.Name</td>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var date = DateTime.Parse(day);
+                                    var dayOfWeek = (int)date.DayOfWeek;
+                                    var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
+                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
+                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
+                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
+                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                        data-user="@user.Id"
+                                        data-day="@date.ToString("yyyy-MM-dd")">
+                                        @if (isEnabled && !string.IsNullOrEmpty(icon))
+                                        {
+                                            <span class="status @cssClass">@icon</span>
+                                        }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+        @if (Model.IsManager)
+        {
+            <h2>Tabella riservata ai manager</h2>
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Utente</th>
+                            @foreach (var day in Model.DaysInMonth)
+                            {
+                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model.TeamUsers)
+                        {
+                            <tr>
+                                <td>@user.Name</td>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var date = DateTime.Parse(day);
+                                    var dayOfWeek = (int)date.DayOfWeek;
+                                    var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
+                                    var status = user.Schedule.ContainsKey(day) ? user.Schedule[day] : "";
+                                    var icon = Model.StatusIcons.GetValueOrDefault(status, "");
+                                    var cssClass = Model.StatusClasses.GetValueOrDefault(status, "");
+                                    <td class="status-cell @(isEnabled ? "" : "disabled-cell")"
+                                        data-user="@user.Id"
+                                        data-day="@date.ToString("yyyy-MM-dd")">
+                                    @if (isEnabled && !string.IsNullOrEmpty(icon))
+                                    {
+                                        <span class="status @cssClass">@icon</span>
+                                    }
+                                    </td>
+                                }
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
 
         <div class="legenda">
             <div class="intera">● Giornata intera</div>
@@ -242,9 +359,8 @@
     <label>Tipo evento:</label>
     <select id="eventType">
         <option value="">-- Scegli --</option>
-        <option value="intera">Giornata intera</option>
-        <option value="mezza">Mezza giornata</option>
-        <option value="assente">Assente</option>
+        <option value="Ferie">Ferie</option>
+        <option value="Permessi">Permessi</option>
         <option value="smartworking">Smart Working</option>
     </select>
 
@@ -426,11 +542,29 @@
             for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
                 const dayStr = d.toISOString().substring(0,10);
                 const cell = document.querySelector(`td.status-cell[data-user='${userId}'][data-day='${dayStr}']`);
-                if (cell) {
+                if (cell && !cell.classList.contains('disabled-cell')) {
                     const icon = statusIcons[eventType] || '';
                     const cssClass = statusClasses[eventType] || '';
                     cell.innerHTML = `<span class="status ${cssClass}">${icon}</span>`;
                 }
+            }
+        });
+        document.querySelectorAll('td.status-cell').forEach(cell => {
+            const userId = cell.getAttribute('data-user');
+            const dayStr = cell.getAttribute('data-day');
+            const date = new Date(dayStr);
+            const dayOfWeek = (date.getDay() + 6) % 7;
+
+            const user = users.find(u => u.Id.toString() === userId);
+            if (!user) return;
+
+            const workingDays = user.timesheetWeekDay ? user.timesheetWeekDay.split('-').map(Number) : [];
+
+            if (!workingDays.includes(dayOfWeek)) {
+                cell.classList.add('non-working-day');
+                cell.onclick = null;
+                cell.style.pointerEvents = 'none';
+                cell.innerHTML = '';
             }
         });
     });

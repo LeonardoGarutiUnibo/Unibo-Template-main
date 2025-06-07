@@ -13,7 +13,8 @@ namespace Template.Web.Areas.Example.Dashboard
     {
         public string MessaggioBenvenuto { get; set; }
 
-        // Aggiungi la lista di utenti
+        public List<AbsenceEventViewModel> Absences { get; set; } = new();
+        public List<UserScheduleViewModel> TeamManagedUsers { get; set; } = new();
         public List<UserViewModel> Users { get; set; } = new List<UserViewModel>();
     }
 
@@ -36,32 +37,41 @@ namespace Template.Web.Areas.Example.Dashboard
         public Guid UserId { get; set; }
         public DateTime StartEventDate { get; set; }
         public DateTime EndEventDate { get; set; }
+        public string EventState { get; set; }
         public string EventType { get; set; }
     }
 
     public class PresenzeViewModel
     {
         public List<AbsenceEventViewModel> Events { get; set; } = new List<AbsenceEventViewModel>();
+        public List<AbsenceEventViewModel> Absences { get; set; } = new List<AbsenceEventViewModel>();
+        public string EnabledWeekDays { get; set; }
         public string CurrentUserName { get; set; }
         public UserScheduleViewModel CurrentUserSchedule { get; set; }
         public DateTime? StartMonth { get; set; }
         public DateTime? EndMonth { get; set; }
         public Guid CurrentUserId { get; set; }
+        public bool IsManager { get; set; }
         public DateTime? SelectedMonth { get; set; }
         public List<string> DaysInMonth { get; set; } = new();
         public List<UserScheduleViewModel> Users { get; set; } = new();
+        public List<UserScheduleViewModel> ManagerUser { get; set; } = new();
+        public List<UserScheduleViewModel> TeamUsers { get; set; } = new();
+        public string CurrentUserTimesheetWeekDay { get; set; }
         public Dictionary<string, string> StatusIcons { get; set; } = new()
         {
-            ["intera"] = "●",
-            ["mezza"] = "◐",
-            ["assente"] = "✖",
-            ["smartworking"] = "🏠︎" //◐ ⚪  ◧◻️
+            ["Ferie Intera"] = "⚪",
+            ["Ferie Mezza"] = "◐",
+            ["Permessi Intera"] = "◻️",
+            ["Permessi Mezza"] = "◧",
+            ["smartworking"] = "🏠︎"
         };
         public Dictionary<string, string> StatusClasses { get; set; } = new()
         {
-            ["intera"] = "intera",
-            ["mezza"] = "mezza",
-            ["assente"] = "assente",
+            ["Ferie Intera"] = "Ferie Intera",
+            ["Permessi Intera"] = "Permessi Intera",
+            ["Ferie Mezza"] = "Ferie Intera",
+            ["Permessi Mezza"] = "Permessi Mezza",
             ["smartworking"] = "smartworking"
         };
     }
@@ -70,6 +80,7 @@ namespace Template.Web.Areas.Example.Dashboard
     {
         public Guid Id { get; set; }
         public string Name { get; set; }
+        public string TimesheetWeekDay { get; set; }
         public Dictionary<string, string> Schedule { get; set; } = new();
     }
 }
