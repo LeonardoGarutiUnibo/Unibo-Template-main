@@ -10,6 +10,8 @@ namespace Template.Services.Shared
         public Guid? Id { get; set; }
         public string WeekDay { get; set; }
         public string Name { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 
     public partial class SharedService
@@ -26,10 +28,22 @@ namespace Template.Services.Shared
                 {
                     WeekDay = cmd.WeekDay,
                     Name = cmd.Name,
+                    StartTime = cmd.StartTime,
+                    EndTime = cmd.EndTime
                 };
 
                 _dbContext.Timesheets.Add(timesheet);
             }
+            else
+           {
+               Console.WriteLine("teamMember già presente, lo aggiorno");
+               Console.WriteLine(cmd.StartTime);
+               Console.WriteLine(cmd.EndTime);
+               timesheet.WeekDay = cmd.WeekDay;
+               timesheet.Name = cmd.Name;
+               timesheet.StartTime = cmd.StartTime;
+               timesheet.EndTime = cmd.EndTime;
+           }
 
             await _dbContext.SaveChangesAsync();
 

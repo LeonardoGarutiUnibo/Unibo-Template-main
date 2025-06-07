@@ -1,4 +1,4 @@
-
+@using SystemTextJson = System.Text.Json.JsonSerializer
 <!DOCTYPE html>
 <html lang="it">
 <head>
@@ -59,6 +59,14 @@
                         </div>
                     </div>
                     <input type="hidden" id="weekDaysEncoded" name="WeekDaysEncoded" />
+                    <div class="mb-3">
+                        <label class="form-label">Ora Inizio</label>
+                        <input type="time" class="form-control" id="StartTime" name="StartTime">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ora Fine</label>
+                        <input type="time" class="form-control" id="EndTime" name="EndTime">
+                    </div>
                     <button type="submit" class="btn btn-primary" onclick="saveTimesheet(event)">Salva</button>
                     <button type="button" class="btn btn-secondary" onclick="hideTimesheetForm()">Chiudi</button>
                 </form>
@@ -70,6 +78,9 @@
                     <th>TimesheetId</th>
                     <th>Nome timesheet</th>
                     <th>Giorni timesheet</th>
+                    <th>Inizio lavoro</th>
+                    <th>Fine lavoro</th>
+                    <th>Modifica timesheet</th>
                     <th>Delete timesheet</th>
                 </tr>
             </thead>
@@ -80,11 +91,25 @@
                         <td>@timesheet.Id</td>
                         <td>@(string.IsNullOrEmpty(timesheet.Name) ? "N/D" : timesheet.Name)</td>
                         <td>@string.Join("-", timesheet.WeekDay)</td>
+                        <td>@timesheet.StartTime.ToString(@"hh\:mm")</td>
+                        <td>@timesheet.EndTime.ToString(@"hh\:mm")</td>
+                        <td>
+                            <button class="btn btn-warning"
+                                data-id="@timesheet.Id"
+                                data-name="@timesheet.Name"
+                                data-weekdays="@string.Join("-", timesheet.WeekDay)"
+                                data-starttime="@timesheet.StartTime.ToString(@"hh\:mm")"
+                                data-endtime="@timesheet.EndTime.ToString(@"hh\:mm")"
+                                onclick="handleEditClick(this)">
+                                ✏️
+                            </button>
+                        </td>
                         <td>
                             <form method="post" asp-action="Delete" asp-controller="Timesheets" asp-area="Example"
                                   onsubmit="return confirm('Sei sicuro di voler cancellare questo timesheet?');">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@timesheet.Id" />
+
                                 <button type="submit" class="btn btn-danger">🗑️</button>
                             </form>
                         </td>
@@ -116,7 +141,57 @@
             });
         }
     }
+
+    function handleEditClick(button) {
+        const id = button.getAttribute('data-id');
+        const name = button.getAttribute('data-name');
+        const weekdays = button.getAttribute('data-weekdays');
+        const startTime = button.getAttribute('data-starttime');
+        const endTime = button.getAttribute('data-endtime');
+
+        editTimesheet(id, name, weekdays, startTime, endTime);
+    }
+
+    function editTimesheet(id, name, weekdays, startTime, endTime) {
+        showTimesheetForm();
+
+        document.getElementById("timesheetName").value = name;
+        document.querySelector("input[name='StartTime']").value = startTime;
+        document.querySelector("input[name='EndTime']").value = endTime;
+
+        document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']").forEach(cb => cb.checked = false);
+
+        const dayIndices = weekdays.split("-");
+        dayIndices.forEach(idx => {
+            const cb = document.querySelector(`#daysCheckboxContainer input[type='checkbox'][value='${idx}']`);
+            if (cb) cb.checked = true;
+        });
+
+        const form = document.querySelector("#timesheetForm form");
+    
+        let existing = form.querySelector("input[name='Id']");
+        if (existing) existing.remove();
+
+        const hiddenId = document.createElement("input");
+        hiddenId.type = "hidden";
+        hiddenId.name = "Id";
+        hiddenId.value = id;
+        form.appendChild(hiddenId);
+    }
+    
+
+    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
+    const selectedDays = [];
+
     function showTimesheetForm() {
+        const form = document.querySelector("#timesheetForm form");
+
+        let existingId = form.querySelector("input[name='Id']");
+        if (!existingId) {
+            form.reset();
+            document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']").forEach(cb => cb.checked = false);
+        }
+
         document.getElementById("timesheetForm").classList.add("active");
     }
 
@@ -124,35 +199,25 @@
         document.getElementById("timesheetForm").classList.remove("active");
     }
 
-    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-const selectedDays = [];
+    function saveTimesheet(event) {
+        event.preventDefault();
+        let name = document.getElementById("timesheetName").value;
+        let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
+        let days = Array.from(checkboxes).map(cb => cb.value);
 
-function showTimesheetForm() {
-    document.getElementById("timesheetForm").classList.add("active");
-}
+        if (name && days.length > 0) {
+            let daysIndices = days;
+            let result = daysIndices.join("-");
 
-function hideTimesheetForm() {
-    document.getElementById("timesheetForm").classList.remove("active");
-}
+            document.getElementById("weekDaysEncoded").value = result;
 
-function saveTimesheet(event) {
-    event.preventDefault();
+            const form = event.target.closest("form");
+            const idInput = form.querySelector("input[name='Id']");
+            console.log("Campo Id:", idInput ? idInput.value : "Nessuno");
 
-    let name = document.getElementById("timesheetName").value;
-    let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
-    let days = Array.from(checkboxes).map(cb => cb.value);
-
-    if (name && days.length > 0) {
-        let daysIndices = days;
-        let result = daysIndices.join("-");
-
-        document.getElementById("weekDaysEncoded").value = result;
-
-        document.getElementById("timesheetName").value = name;
-
-        event.target.closest("form").submit();
-    } else {
-        alert("Compila tutti i campi!");
+            form.submit();
+        } else {
+            alert("Compila tutti i campi!");
+        }
     }
-}
 </script>

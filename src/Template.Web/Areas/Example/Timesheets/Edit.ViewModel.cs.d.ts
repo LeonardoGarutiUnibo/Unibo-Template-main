@@ -3,5 +3,7 @@ declare module Example.Timesheets.Server {
 		id?: any;
 		weekDay: string;
 		name: string;
+		startTime: TimeSpan;
+		endTime: TimeSpan;
 	}
 }

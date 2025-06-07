@@ -57,14 +57,16 @@ namespace Template.Web.Areas.Example.Timesheets
             return View(model);
         }
 
-        [HttpPost]
-        public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
+
+[HttpPost]
+        [ValidateAntiForgeryToken]
+        public virtual async Task<IActionResult> Edit2(EditViewModel model, string WeekDaysEncoded)
         {
             Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDaysEncoded: {WeekDaysEncoded}");
             
             if (!string.IsNullOrEmpty(WeekDaysEncoded))
             {
-                model.WeekDay = WeekDaysEncoded.Replace("-", ",");
+                model.WeekDay = WeekDaysEncoded;
             }
 
             if (!ModelState.IsValid)
@@ -94,6 +96,49 @@ namespace Template.Web.Areas.Example.Timesheets
 
             return RedirectToAction(nameof(Index));
         }
+
+[HttpPost]
+[ValidateAntiForgeryToken]
+public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
+{
+    Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDay: {model.WeekDay}, StartTime: {model.StartTime}, EndTime: {model.EndTime}");
+
+    if (!string.IsNullOrEmpty(WeekDaysEncoded))
+    {
+        model.WeekDay = WeekDaysEncoded;
+
+    }
+
+    if (string.IsNullOrEmpty(model.WeekDay))
+    {
+        ModelState.AddModelError(nameof(model.WeekDay), "Seleziona almeno un giorno.");
+    }
+
+    if (!ModelState.IsValid)
+    {
+        Alerts.AddError(this, "Errore in aggiornamento");
+        // Se non vuoi creare una view Edit.cshtml, fai redirect a Index (oppure gestisci diversamente)
+        return RedirectToAction(nameof(Index));
+    }
+
+   try
+    {
+        Console.WriteLine("Prima di chiamare HandleTimesheet");
+        Console.WriteLine(model.StartTime);
+        Console.WriteLine(model.EndTime);
+        model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
+        Console.WriteLine("Dopo chiamata HandleTimesheet");
+        Alerts.AddSuccess(this, "Informazioni aggiornate");
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine("Eccezione HandleTimesheet: " + e.Message);
+        ModelState.AddModelError(string.Empty, e.Message);
+        Alerts.AddError(this, "Errore in aggiornamento");
+    }
+    Console.WriteLine("Uscendo");
+    return RedirectToAction(nameof(Index));
+}
 
         [HttpPost]
         [ValidateAntiForgeryToken]

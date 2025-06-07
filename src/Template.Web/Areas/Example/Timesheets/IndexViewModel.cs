@@ -63,10 +63,14 @@ namespace Template.Web.Areas.Example.Timesheets
             this.Id = timesheetIndexDTO.Id;
             this.Name = timesheetIndexDTO.Name;
             this.WeekDay = timesheetIndexDTO.WeekDay;
+            this.StartTime = timesheetIndexDTO.StartTime;
+            this.EndTime = timesheetIndexDTO.EndTime;
         }
 
         public Guid Id { get; set; }
         public string Name { get; set; }
         public string WeekDay { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 }

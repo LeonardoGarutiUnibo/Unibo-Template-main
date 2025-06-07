@@ -14,8 +14,8 @@ namespace Template.Services.Shared
 
         public string WeekDay { get; set; }
         public string Name { get; set; }
-        public DateTime StartTime { get; set; }
-        public DateTime EndTime { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
 
     }
 }

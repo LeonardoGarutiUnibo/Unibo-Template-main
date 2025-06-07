@@ -23,6 +23,8 @@ namespace Template.Services.Shared
             public Guid Id { get; set; }
             public string WeekDay { get; set; }
             public string Name { get; set; }
+            public TimeSpan StartTime { get; set; }
+            public TimeSpan EndTime { get; set; }
         }
     }
 
@@ -44,6 +46,8 @@ namespace Template.Services.Shared
             public Guid Id { get; set; }
             public string WeekDay { get; set; }
             public string Name { get; set; }
+            public TimeSpan StartTime { get; set; }
+            public TimeSpan EndTime { get; set; }
         }
     }
 
@@ -57,6 +61,8 @@ namespace Template.Services.Shared
         public Guid Id { get; set; }
         public string WeekDay { get; set; }
         public string Name { get; set; }
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
     }
 
     public partial class SharedService
@@ -79,7 +85,9 @@ namespace Template.Services.Shared
                 {
                     Id = x.Id,
                     WeekDay = x.WeekDay,
-                    Name = x.Name
+                    Name = x.Name,
+                    StartTime = x.StartTime,
+                    EndTime = x.EndTime
                 }).ToArrayAsync(),
                 Count = await queryable.CountAsync(),
             };
@@ -104,6 +112,8 @@ namespace Template.Services.Shared
                         Id = x.Id,
                         Name = x.Name,
                         WeekDay = x.WeekDay,
+                        StartTime = x.StartTime,
+                        EndTime = x.EndTime
                     })
                     .ToArrayAsync(),
                 Count = await queryable.CountAsync()
@@ -122,7 +132,8 @@ namespace Template.Services.Shared
                 .Select(x => new TimesheetDetailDTO{
                     Id = x.Id,
                     WeekDay = x.WeekDay,
-                    Name = x.Name
+                    Name = x.Name,
+                    EndTime = x.EndTime
                 })
                 .FirstOrDefaultAsync();
         }

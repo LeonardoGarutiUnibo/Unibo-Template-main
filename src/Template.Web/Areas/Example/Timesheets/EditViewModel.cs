@@ -19,6 +19,9 @@ namespace Template.Web.Areas.Example.Timesheets
         [Display(Name = "Giorni della settimana")]
         public string WeekDay { get; set; }
 
+        public TimeSpan StartTime { get; set; }
+        public TimeSpan EndTime { get; set; }
+
         public string ToJson()
         {
             return Infrastructure.JsonSerializer.ToJsonCamelCase(this);
@@ -40,7 +43,10 @@ namespace Template.Web.Areas.Example.Timesheets
             {
                 Id = Id,
                 Name = Name,
-                WeekDay = WeekDay
+                WeekDay = WeekDay,
+                StartTime =  StartTime,
+                EndTime = EndTime
+
             };
         }
     }
