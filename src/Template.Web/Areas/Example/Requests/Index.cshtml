@@ -31,27 +31,8 @@
 </head>
 <body>
     <div class="container mt-4" style="padding-left: 200px;">
-        <h2>Gestione Team</h2>
-        <div class="mb-3">
-            <button class="btn btn-primary">Nome team</button>
-            <button class="btn btn-secondary">Ricerca</button>
-            <button class="btn btn-success" onclick="showTeamForm()">+ Nuovo Team</button>
-        </div>
-        <div id="teamForm" class="fixed-overlay">
-            <div class="form-container">
-                <h3>Crea Team</h3>
-                <form method="post" asp-action="Edit" asp-controller="Teams" asp-area="Example">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label class="form-label" for="teamName">Nome Team</label>
-                        <input type="text" class="form-control" id="teamName" name="Name" />
-                        <input type="hidden" name="Id" value="" />
-                    </div>
-                    <button type="submit" class="btn btn-primary">Salva</button>
-                    <button type="button" class="btn btn-secondary" onclick="hideTeamForm()">Chiudi</button>
-                </form>
-            </div>
-        </div>
+        <h2>Gestione Richieste</h2>
+
         <table class="table table-bordered">
             <thead>
                 <tr>
@@ -75,7 +56,31 @@
                             <td>@absence.StartEventDate.ToString("dd/MM/yyyy HH:mm")</td>
                             <td>@absence.EndEventDate.ToString("dd/MM/yyyy  HH:mm")</td>
                             <td>@absence.EventType</td>
-                            <td>@absence.EventState</td>
+                            <td>
+                                <form method="post" asp-action="UpdateAbsenceState" asp-controller="Requests" asp-area="Example" class="d-flex align-items-center gap-1">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@absence.Id" />
+                                    <select name="newState" class="form-select form-select-sm">
+                                            @if (absence.EventState == "Approvato")
+                                            {
+                                                @:<option value="Approvato" selected>Approvato</option>
+                                                @:<option value="Rifiutato">Rifiutato</option>
+                                            }
+                                            else if (absence.EventState == "Rifiutato")
+                                            {
+                                                @:<option value="Approvato">Approvato</option>
+                                                @:<option value="Rifiutato" selected>Rifiutato</option>
+                                            }
+                                            else // se è Pending o qualunque altro valore iniziale
+                                            {
+                                                @:<option value="Pending" selected>Pending</option>
+                                                @:<option value="Approvato">Approvato</option>
+                                                @:<option value="Rifiutato">Rifiutato</option>
+                                            }
+                                        </select>
+                                    <button type="submit" class="btn btn-primary btn-sm">Salva</button>
+                                </form>
+                            </td>
                             <td>
                                 <form method="post" asp-action="DeleteAbsence" asp-controller="Requests" asp-area="Example">
                                     @Html.AntiForgeryToken()

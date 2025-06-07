@@ -45,5 +45,38 @@ namespace Template.Services.Shared
 
             return absenceEvent.Id;
         }
+
+        public async Task UpdateAbsenceEventState(Guid id, string newState)
+        {
+            var absence = await _dbContext.AbsenceEvents.FirstOrDefaultAsync(x => x.Id == id);
+            if (absence != null)
+            {
+                absence.EventState = newState;
+                await _dbContext.SaveChangesAsync();
+            }
+        }
+
+        public async Task<bool> DeleteAbsenceEventAsync(Guid absenceEventId)
+        {
+            var absenceEvent = await _dbContext.AbsenceEvents
+                .Where(a => a.Id == absenceEventId)
+                .FirstOrDefaultAsync();
+
+            if (absenceEvent == null)
+                return false;
+
+            _dbContext.AbsenceEvents.Remove(absenceEvent);
+
+            try
+            {
+                await _dbContext.SaveChangesAsync();
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
     }
 }

@@ -37,7 +37,6 @@ namespace Template.Web.Areas.Example.Requests
             if (managerInfo == null)
                 return View(model);
 
-            // Recupera gli utenti membri del team
             var usersInfo = await _sharedService.QueryTeamMemberUsers(managerInfo.TeamId, false);
 
             if (usersInfo == null || !usersInfo.Any())
@@ -48,11 +47,10 @@ namespace Template.Web.Areas.Example.Requests
 
             Console.WriteLine("Membri del team trovati " + usersInfo.Count);
 
-            // Estrai gli UserId
             var userIds = usersInfo.Select(x => x.UserId).ToList();
 
             var userFullNames = await _sharedService.QueryUserFullNamesByIds(userIds);
-            // Query sulle assenze per questi utenti
+
             var absencesResult = await _sharedService.Query(new AbsenceEventsIndexQuery
             {
                 UserId = userIds
@@ -71,6 +69,14 @@ namespace Template.Web.Areas.Example.Requests
                 FullName = userFullNames.TryGetValue(a.UserId, out var name) ? name : "Utente sconosciuto"
             }).ToList();
             return View(model);
+        }
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public virtual async Task<IActionResult> UpdateAbsenceState(Guid id, string newState)
+        {
+            await _sharedService.UpdateAbsenceEventState(id, newState);
+            return RedirectToAction("Index");
         }
     }
 }
