@@ -200,7 +200,7 @@
             selectedTeamIdForManager = teamId;
 
             try {
-                const response = await fetch(`/Example/TeamMembers/GetAvailableUsersForManager?teamId=${teamId}`);
+                const response = await fetch(`/Example/TeamMembers/GetAvailableUsersForManager?teamId=${teamId}`, { cache: 'no-store' });
                 if (!response.ok) throw new Error('Errore nel recupero utenti disponibili');
 
                 const users = await response.json();
@@ -228,8 +228,7 @@
                 const response = await fetch(`/Example/TeamMembers/AssignTeam`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         userId: userId,
@@ -238,7 +237,10 @@
                     })
                 });
 
-                if (!response.ok) throw new Error("Errore nell'assegnazione manager");
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Errore nel salvataggio");
+                }
 
                 alert("Manager assegnato con successo!");
                 location.reload();
@@ -263,7 +265,7 @@
 
         async function showTeamUsers(teamId) {
             try {
-                const response = await fetch(`/Example/TeamMembers/GetUsers?teamId=${teamId}`);
+                const response = await fetch(`/Example/TeamMembers/GetUsers?teamId=${teamId}`, { cache: 'no-store' });
                 if (!response.ok) throw new Error('Errore nel recupero utenti');
                 const users = await response.json();
 
@@ -290,19 +292,20 @@
         }
 
         async function saveUserTeam(userId) {
+            console.log(userId)
             const select = document.getElementById(`teamSelect_${userId}`);
             const selectedTeamId = select.value;
-
+            console.log(userId)
             try {
                 const response = await fetch(`/Example/TeamMembers/AssignTeam`, {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/json',
-                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                        'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         userId: userId,
-                        teamId: selectedTeamId
+                        teamId: selectedTeamId,
+                        isManager: false
                     })
                 });
 
@@ -311,6 +314,7 @@
                     throw new Error(errorData.error || "Errore nel salvataggio");
                 }
                 alert("Team aggiornato con successo!");
+                location.reload();
             } catch (err) {
                 alert("Errore durante il salvataggio: " + err.message);
             }

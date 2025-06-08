@@ -24,6 +24,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome1",
                     NickName = "Nickname1",
                     Role = "Admin",
+                    TimesheetId = Guid.Parse("b7f5e3c8-4e2b-4703-9879-9b1f60e5c2a7"),
                     
                 },
                 new User
@@ -35,7 +36,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome2",
                     NickName = "Nickname2",
                     Role = "Admin",
-                    
+                    TimesheetId = Guid.Parse("b7f5e3c8-4e2b-4703-9879-9b1f60e5c2a7"),
                 },
                 new User
                 {
@@ -46,7 +47,7 @@ namespace Template.Infrastructure
                     LastName = "Cognome3",
                     NickName = "Nickname3",
                     Role =  "User",
-                    
+                    TimesheetId = Guid.Parse("b7f5e3c8-4e2b-4703-9879-9b1f60e5c2a7"),
 
                 });
 

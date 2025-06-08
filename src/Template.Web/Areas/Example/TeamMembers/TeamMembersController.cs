@@ -12,6 +12,7 @@ using Template.Web.SignalR.Hubs.Events;
 namespace Template.Web.Areas.Example.TeamMembers
 {
     [Area("Example")]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public partial class TeamMembersController : AuthenticatedBaseController
     {
 
@@ -223,14 +224,21 @@ namespace Template.Web.Areas.Example.TeamMembers
                 Paging = null
             });
 
-
             var hasManager = allAssignments.TeamMembers.Where(tm => tm.TeamId == teamId && tm.IsManager == true);
 
-            if(!hasManager.Any() == true){
+            if(!hasManager.Any() == true && request.IsManager != true){
                 return BadRequest( new {error = "Il team selezionato non ha ancora un team manager, assegnare il team manager."});
             }
+            var isManager = allAssignments.TeamMembers.Where(tm => tm.UserId == userId && tm.IsManager == true);
+            if (isManager.Any()){
+                var ismanager = isManager.FirstOrDefault();
+                var oldTeamHasUsers = allAssignments.TeamMembers.Where(tm => tm.TeamId == ismanager.TeamId && tm.IsManager == false);
+                if(oldTeamHasUsers.Any() == true && request.IsManager == true){
+                    return BadRequest( new {error = "Il team ha degli utenti dentro e non può rimanere senza manager, assegnare nuovo manager"});
+                }
+            }
             var userAssignments = allAssignments.TeamMembers.Where(tm => tm.UserId == userId).ToList();
-            Console.WriteLine($"UserId: {request.UserId}, TeamId: {request.TeamId}, IsManager: {request.IsManager}");
+
             bool isAlreadyAssignedToAnotherTeam = userAssignments
             .Any(tm => tm.TeamId != teamId && tm.IsManager == request.IsManager);
             if (isAlreadyAssignedToAnotherTeam)
@@ -250,7 +258,6 @@ namespace Template.Web.Areas.Example.TeamMembers
                     return BadRequest(new {error = "L'utente è già manager di questo team e non può essere assegnato come membro."});
                 }
             }
-
             if (request.IsManager)
             {   
                 var isMemberInTeam = userAssignments.Any(tm => tm.TeamId == teamId && !tm.IsManager);

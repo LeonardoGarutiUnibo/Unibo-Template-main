@@ -460,7 +460,6 @@
 
     <div style="text-align: right; margin-top: 12px;">
         <button class="save" onclick="saveStatus()" disabled id="saveBtn">Salva</button>
-        <button class="delete" onclick="deleteStatus()">Elimina</button>
         <button class="cancel" onclick="closePopup()">Annulla</button>
     </div>
 </div>
@@ -651,11 +650,6 @@ document.getElementById('startDateTime').addEventListener('input', function() {
         } catch (error) {
             alert('Errore di rete o server: ' + error.message);
         }
-    }
-
-    function deleteStatus() {
-        alert(`Elimina evento per utente ${currentUserId}, giorno ${currentDay}`);
-        closePopup();
     }
 
     document.addEventListener('click', function(event) {
