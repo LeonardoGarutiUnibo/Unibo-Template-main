@@ -30,11 +30,17 @@
     </style>
 </head>
 <body>
-    <div class="container mt-4" style="padding-left: 200px;">
-        <h2>Gestione Richieste</h2>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Gestione Richieste</h2>
 
-        <table class="table table-bordered">
-            <thead>
+        <div class="d-flex justify-content-center gap-3 mb-4">
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#searchModal">
+                <i class="bi bi-search"></i> Ricerca Utenti
+            </button>
+        </div>
+
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-dark">
                 <tr>
                     <th>Utente</th>
                     <th>Data richiesta</th>
@@ -78,14 +84,15 @@
                                                 @:<option value="Rifiutato">Rifiutato</option>
                                             }
                                         </select>
-                                    <button type="submit" class="btn btn-primary btn-sm">Salva</button>
+                                    <button type="submit" class="btn btn-outline-primary btn-sm" title="Salva stato">Salva</button>
                                 </form>
                             </td>
                             <td>
                                 <form method="post" asp-action="DeleteAbsence" asp-controller="Requests" asp-area="Example">
                                     @Html.AntiForgeryToken()
                                     <input type="hidden" name="id" value="@absence.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm">Elimina</button>
+                                    <button type="submit" class="btn btn-danger btn-sm">
+                                    Elimina</button>
                                 </form>
                             </td>
                         </tr>
@@ -98,60 +105,31 @@
             </tbody>
         </table>
     </div>
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">Ricerca Utente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Nome utente" onkeyup="filterUsers()" autofocus />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </body>
-</html>
-
 <script>
-   function deleteTeam(id) {
-        if (confirm("Sei sicuro di voler cancellare questo team?")) {
-            fetch(`/Example/Teams/Delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({ id: id })
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    alert("Errore nella cancellazione");
-                }
-            });
-        }
+    function filterUsers() {
+        const input = document.getElementById("searchInput").value.toLowerCase();
+        const rows = document.querySelectorAll("tbody tr");
+        rows.forEach(row => {
+            const name = row.cells[0].textContent.toLowerCase();
+            row.style.display = name.includes(input) ? "" : "none";
+        });
     }
-
-    function editTeam(id) {
-        alert("Modifica team ID: " + id);
-    }
-    function showTeamForm() {
-        document.getElementById("teamForm").classList.add("active");
-    }
-
-    function hideTeamForm() {
-        document.getElementById("teamForm").classList.remove("active");
-    }
-
-    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-const selectedDays = [];
-
-function showTeamForm() {
-    document.getElementById("teamForm").classList.add("active");
-}
-
-function hideTeamForm() {
-    document.getElementById("teamForm").classList.remove("active");
-}
-
-function saveTeam() {
-    let name = document.getElementById("teamName").value;
-
-    if (name.length > 0) {
-        alert(`Team creato!\nNome: ${name}`);
-        hideTeamForm();
-    } else {
-        alert("Compila tutti i campi!");
-    }
-}
 </script>
+</html>

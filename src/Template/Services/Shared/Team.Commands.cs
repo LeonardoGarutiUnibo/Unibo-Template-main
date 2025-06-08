@@ -28,6 +28,9 @@ namespace Template.Services.Shared
 
                 _dbContext.Teams.Add(team);
             }
+            else{
+                team.Name = cmd.Name;
+            }
 
             await _dbContext.SaveChangesAsync();
 
