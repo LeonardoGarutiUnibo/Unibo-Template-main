@@ -44,7 +44,6 @@
                         <th>Email</th>
                         <th>Ruolo</th>
                         <th>Team</th>
-                        <th>Azioni</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -92,26 +91,6 @@
                                 }
                             </select>
                                 <button class="btn btn-sm btn-primary mt-1" onclick="saveUserTeam('@user.Id')">Salva</button>
-                            </td>
-
-                            <td>
-                                <button class="btn btn-warning btn-sm"
-                                        onclick="editUser(
-                                            '@user.Id',
-                                            '@user.FirstName',
-                                            '@user.LastName',
-                                            '@user.NickName',
-                                            '@user.Email',
-                                            '@user.Role'
-                                        )">
-                                    ✏️ Modifica
-                                </button>
-                                <form method="post" asp-action="Delete" asp-controller="Users" asp-area="Example"
-                                      onsubmit="return confirm('Sei sicuro di voler cancellare questo utente?');" style="display:inline;">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@user.Id" />
-                                    <button type="submit" class="btn btn-danger">🗑️</button>
-                                </form>
                             </td>
                         </tr>
                     }

@@ -222,7 +222,7 @@
                                 data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
                                 data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
                                 data-day="@date.ToString("yyyy-MM-dd")"
-                                @Html.Raw(isEnabled? "onclick=\"openPopup(this)\"" : "")>
+                                @Html.Raw(isEnabled && icon == ""? "onclick=\"openPopup(this)\"" : "")>
                                 @if (isEnabled)
                                 {
                                     <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
@@ -246,7 +246,7 @@
             </table>
         </div>
 
-        @if (Model.ManagerUser != null)
+        @if (Model.ManagerUser.Any())
         {
             <h2 class="toggle-table" data-target="managerTable">Il mio Manager</h2>
             <div id="managerTable" class="table-wrapper" style="margin-bottom: 40px;">
