@@ -48,7 +48,6 @@
                     <th>Fine</th>
                     <th>Tipo evento</th>
                     <th>Stato evento</th>
-                    <th>Azioni</th>
                 </tr>
             </thead>
             <tbody>
@@ -84,15 +83,7 @@
                                                 @:<option value="Rifiutato">Rifiutato</option>
                                             }
                                         </select>
-                                    <button type="submit" class="btn btn-outline-primary btn-sm" title="Salva stato">Salva</button>
-                                </form>
-                            </td>
-                            <td>
-                                <form method="post" asp-action="DeleteAbsence" asp-controller="Requests" asp-area="Example">
-                                    @Html.AntiForgeryToken()
-                                    <input type="hidden" name="id" value="@absence.Id" />
-                                    <button type="submit" class="btn btn-danger btn-sm">
-                                    Elimina</button>
+                                    <button type="submit" class="btn btn-outline-success btn-sm" title="Salva stato">Salva</button>
                                 </form>
                             </td>
                         </tr>
