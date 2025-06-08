@@ -33,9 +33,8 @@
     <div class="container mt-4" style="padding-left: 200px;">
         <h2>Gestione Timesheet</h2>
         <div class="mb-3">
-            <button class="btn btn-primary">Nome timesheet</button>
-            <button class="btn btn-secondary">Ricerca</button>
             <button class="btn btn-success" onclick="showTimesheetForm()">+ Nuovo Timesheet</button>
+            <button class="btn btn-info" onclick="showSearchForm()">🔍 Ricerca Timesheet</button>
         </div>
         <div id="timesheetForm" class="fixed-overlay">
             <div class="form-container">
@@ -75,7 +74,6 @@
         <table class="table table-bordered">
             <thead>
                 <tr>
-                    <th>TimesheetId</th>
                     <th>Nome timesheet</th>
                     <th>Giorni timesheet</th>
                     <th>Inizio lavoro</th>
@@ -88,7 +86,6 @@
                 @foreach (var timesheet in Model.Timesheets)
                 {
                     <tr>
-                        <td>@timesheet.Id</td>
                         <td>@(string.IsNullOrEmpty(timesheet.Name) ? "N/D" : timesheet.Name)</td>
                         <td>@string.Join("-", timesheet.WeekDay)</td>
                         <td>@timesheet.StartTime.ToString(@"hh\:mm")</td>
@@ -118,6 +115,19 @@
             </tbody>
         </table>
     </div>
+
+     <!-- Ricerca timesheet -->
+        <div id="searchUserForm" class="fixed-overlay">
+    <div class="form-container">
+        <h3>Ricerca Timesheet</h3>
+        <div class="mb-3">
+            <label class="form-label">Nome timesheet</label>
+            <input type="text" class="form-control" id="searchInput" onkeyup="filterUsers()">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="hideSearchForm()">Chiudi</button>
+    </div>
+</div>
+
 </body>
 </html>
 
@@ -219,5 +229,28 @@
         } else {
             alert("Compila tutti i campi!");
         }
+    }
+
+    function showSearchForm() {
+        document.getElementById("searchUserForm").classList.add("active");
+        document.getElementById("searchInput").value = ""; // Pulisce il campo di ricerca
+    }
+
+    function hideSearchForm() {
+        document.getElementById("searchUserForm").classList.remove("active");
+    }
+
+    function filterUsers() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            let userName = row.cells[0].textContent.toLowerCase(); // Nome utente nella prima colonna
+            if (userName.includes(input)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
     }
 </script>

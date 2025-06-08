@@ -31,6 +31,8 @@
         <div class="btn-group mb-3" role="group">
             <button type="button" class="btn btn-outline-primary" onclick="showSection('users')">👥 Mostra Utenti</button>
             <button type="button" class="btn btn-outline-secondary" onclick="showSection('teams')">🧑‍🤝‍🧑 Mostra Team</button>
+            <button class="btn btn-info" onclick="showSearchForm()">🔍 Ricerca</button>
+
         </div>
         <div id="usersSection">
             <table class="table table-bordered mt-4">
@@ -203,6 +205,18 @@
       </div>
     </div>
 
+            <!-- Ricerca utenti -->
+        <div id="searchUserForm" class="fixed-overlay">
+    <div class="form-container">
+        <h3>Ricerca</h3>
+        <div class="mb-3">
+            <label class="form-label">Nome</label>
+            <input type="text" class="form-control" id="searchInput" onkeyup="filterUsers()">
+        </div>
+        <button type="button" class="btn btn-secondary" onclick="hideSearchForm()">Chiudi</button>
+    </div>
+</div>
+
     <script>
         let selectedTeamIdForManager = null;
 
@@ -329,6 +343,29 @@
             const isAdminChecked = document.getElementById("isAdmin").checked;
             document.getElementById("roleField").value = isAdminChecked ? "Admin" : "User";
         });
+
+        function showSearchForm() {
+        document.getElementById("searchUserForm").classList.add("active");
+        document.getElementById("searchInput").value = ""; // Pulisce il campo di ricerca
+    }
+
+    function hideSearchForm() {
+        document.getElementById("searchUserForm").classList.remove("active");
+    }
+
+    function filterUsers() {
+        let input = document.getElementById("searchInput").value.toLowerCase();
+        let rows = document.querySelectorAll("tbody tr");
+
+        rows.forEach(row => {
+            let userName = row.cells[0].textContent.toLowerCase(); // Nome utente nella prima colonna
+            if (userName.includes(input)) {
+                row.style.display = "";
+            } else {
+                row.style.display = "none";
+            }
+        });
+    }
     </script>
 </body>
 </html>
