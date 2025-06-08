@@ -6,6 +6,8 @@ using Template.Services.Shared;
 using Template.Web.Infrastructure;
 using Template.Web.SignalR;
 using Template.Web.SignalR.Hubs.Events;
+using System.Linq;
+
 
 namespace Template.Web.Areas.Example.Teams
 {
@@ -63,14 +65,11 @@ namespace Template.Web.Areas.Example.Teams
             {
                 try
                 {
-                    Console.WriteLine("Prima di chiamare HandleTeam");
                     model.Id = await _sharedService.HandleTeam(model.ToAddOrUpdateTeamCommand());
-                    Console.WriteLine("Dopo chiamata HandleTeam");
                     Alerts.AddSuccess(this, "Informazioni aggiornate");
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine("Eccezione HandleTeam: " + e.Message);
                     ModelState.AddModelError(string.Empty, e.Message);
                     Alerts.AddError(this, "Errore in aggiornamento");
                 }
@@ -84,22 +83,41 @@ namespace Template.Web.Areas.Example.Teams
             return RedirectToAction(nameof(Index));
         }
 
-        [HttpPost]
+       [HttpPost]
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Delete(Guid id)
         {
             Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
-
+        
             try
             {
+                var members = await _sharedService.QueryTeamMemberUsers(id, false);
+                var managers = await _sharedService.QueryTeamMemberUsers(id, true);
+        
+                if ((members?.Any() ?? false))
+                {
+                    Alerts.AddError(this, "Impossibile cancellare il team: sono ancora presenti membri.");
+                    return RedirectToAction(nameof(Index));
+                }
+                if ((managers?.Any() ?? false))
+                {
+                    try{
+                        await _sharedService.DeleteTeamMember(managers[0].Id);
+                    }
+                    catch (Exception e){
+                        Alerts.AddError(this, "Errore nella cancellazione del Manager: " + e.Message);
+                        return RedirectToAction(nameof(Index));
+                    }
+                    
+                }
                 await _sharedService.DeleteTeam(id); 
-                Alerts.AddSuccess(this, "Team cancellato");
+                Alerts.AddSuccess(this, "Team cancellato con successo.");
             }
             catch (Exception e)
             {
                 Alerts.AddError(this, "Errore nella cancellazione: " + e.Message);
             }
-
+        
             return RedirectToAction(nameof(Index));
         }
     }

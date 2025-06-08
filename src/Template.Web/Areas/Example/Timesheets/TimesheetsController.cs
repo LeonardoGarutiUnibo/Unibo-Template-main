@@ -58,33 +58,32 @@ namespace Template.Web.Areas.Example.Timesheets
         }
 
 
-[HttpPost]
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public virtual async Task<IActionResult> Edit2(EditViewModel model, string WeekDaysEncoded)
+        public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
         {
-            Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDaysEncoded: {WeekDaysEncoded}");
-            
+            Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDay: {model.WeekDay}, StartTime: {model.StartTime}, EndTime: {model.EndTime}");
+
             if (!string.IsNullOrEmpty(WeekDaysEncoded))
             {
                 model.WeekDay = WeekDaysEncoded;
+
+            }
+
+            if (string.IsNullOrEmpty(model.WeekDay))
+            {
+                ModelState.AddModelError(nameof(model.WeekDay), "Seleziona almeno un giorno.");
             }
 
             if (!ModelState.IsValid)
             {
-                Console.WriteLine("ModelState non valido:");
-                foreach(var e in ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    Console.WriteLine(e.ErrorMessage);
-                }
                 Alerts.AddError(this, "Errore in aggiornamento");
                 return RedirectToAction(nameof(Index));
             }
 
-            try
+           try
             {
-                Console.WriteLine("Prima di chiamare HandleTimesheet");
                 model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
-                Console.WriteLine("Dopo chiamata HandleTimesheet");
                 Alerts.AddSuccess(this, "Informazioni aggiornate");
             }
             catch (Exception e)
@@ -93,52 +92,9 @@ namespace Template.Web.Areas.Example.Timesheets
                 ModelState.AddModelError(string.Empty, e.Message);
                 Alerts.AddError(this, "Errore in aggiornamento");
             }
-
+            Console.WriteLine("Uscendo");
             return RedirectToAction(nameof(Index));
         }
-
-[HttpPost]
-[ValidateAntiForgeryToken]
-public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
-{
-    Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDay: {model.WeekDay}, StartTime: {model.StartTime}, EndTime: {model.EndTime}");
-
-    if (!string.IsNullOrEmpty(WeekDaysEncoded))
-    {
-        model.WeekDay = WeekDaysEncoded;
-
-    }
-
-    if (string.IsNullOrEmpty(model.WeekDay))
-    {
-        ModelState.AddModelError(nameof(model.WeekDay), "Seleziona almeno un giorno.");
-    }
-
-    if (!ModelState.IsValid)
-    {
-        Alerts.AddError(this, "Errore in aggiornamento");
-        // Se non vuoi creare una view Edit.cshtml, fai redirect a Index (oppure gestisci diversamente)
-        return RedirectToAction(nameof(Index));
-    }
-
-   try
-    {
-        Console.WriteLine("Prima di chiamare HandleTimesheet");
-        Console.WriteLine(model.StartTime);
-        Console.WriteLine(model.EndTime);
-        model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
-        Console.WriteLine("Dopo chiamata HandleTimesheet");
-        Alerts.AddSuccess(this, "Informazioni aggiornate");
-    }
-    catch (Exception e)
-    {
-        Console.WriteLine("Eccezione HandleTimesheet: " + e.Message);
-        ModelState.AddModelError(string.Empty, e.Message);
-        Alerts.AddError(this, "Errore in aggiornamento");
-    }
-    Console.WriteLine("Uscendo");
-    return RedirectToAction(nameof(Index));
-}
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -148,7 +104,18 @@ public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDa
 
             try
             {
-                await _sharedService.DeleteTimesheet(id); 
+                var usersWithTimesheet = await _sharedService.Query(new UsersByTimesheetQuery
+                {
+                    TimesheetId = id
+                });
+
+                if (usersWithTimesheet.Users.Any())
+                {
+                    Alerts.AddError(this, "Non puoi cancellare questo timesheet perché ci sono utenti associati.");
+                    return RedirectToAction(nameof(Index));
+                }
+                Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
+                await _sharedService.DeleteTimesheet(id);
                 Alerts.AddSuccess(this, "Timesheet cancellato");
             }
             catch (Exception e)

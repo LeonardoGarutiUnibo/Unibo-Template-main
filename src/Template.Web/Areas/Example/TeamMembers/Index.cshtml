@@ -64,9 +64,6 @@
                                 {
                                     foreach (var team in Model.TeamsWithUserCount)
                                     {
-                                        Console.WriteLine("StampoTeam");
-                                        Console.WriteLine(user.TeamId);
-                                        Console.WriteLine(team.TeamId);
                                         if (team.TeamId == user.TeamId)
                                         {
                                             teamName = team.TeamName;
@@ -331,9 +328,9 @@
                 });
 
                 if (!response.ok) {
-                    throw new Error("Errore nel salvataggio");
+                    const errorData = await response.json();
+                    throw new Error(errorData.error || "Errore nel salvataggio");
                 }
-
                 alert("Team aggiornato con successo!");
             } catch (err) {
                 alert("Errore durante il salvataggio: " + err.message);

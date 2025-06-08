@@ -223,6 +223,12 @@ namespace Template.Web.Areas.Example.TeamMembers
                 Paging = null
             });
 
+
+            var hasManager = allAssignments.TeamMembers.Where(tm => tm.TeamId == teamId && tm.IsManager == true);
+
+            if(!hasManager.Any() == true){
+                return BadRequest( new {error = "Il team selezionato non ha ancora un team manager, assegnare il team manager."});
+            }
             var userAssignments = allAssignments.TeamMembers.Where(tm => tm.UserId == userId).ToList();
             Console.WriteLine($"UserId: {request.UserId}, TeamId: {request.TeamId}, IsManager: {request.IsManager}");
             bool isAlreadyAssignedToAnotherTeam = userAssignments
@@ -241,7 +247,7 @@ namespace Template.Web.Areas.Example.TeamMembers
                 var isManagerInTeam = userAssignments.Any(tm => tm.TeamId == teamId && tm.IsManager);
                 if (isManagerInTeam)
                 {
-                    return BadRequest("L'utente è già manager di questo team e non può essere assegnato come membro.");
+                    return BadRequest(new {error = "L'utente è già manager di questo team e non può essere assegnato come membro."});
                 }
             }
 
@@ -250,7 +256,7 @@ namespace Template.Web.Areas.Example.TeamMembers
                 var isMemberInTeam = userAssignments.Any(tm => tm.TeamId == teamId && !tm.IsManager);
                 if (isMemberInTeam)
                 {
-                    return BadRequest("L'utente è già membro di questo team e non può essere assegnato come manager.");
+                    return BadRequest( new {error = "L'utente è già membro di questo team e non può essere assegnato come manager."});
                 }
             }
             var existingMember = userAssignments.FirstOrDefault(tm => tm.TeamId == teamId);
