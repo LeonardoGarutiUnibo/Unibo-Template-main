@@ -82,7 +82,7 @@ namespace Template.Web.Areas.Example.TeamMembers
         public virtual async Task<IActionResult> Index(IndexViewModel model)
         {
         
-            var teamMembersDto = await _sharedService.Query(model.ToTeamMembersIndexQuery());
+            var teamMembersDto = await _sharedService.Query(model.ToTeamMembersAllIndexQuery());
             model.SetTeamMembers(teamMembersDto);
 
             var usersDto = await _sharedService.Query(new UsersIndexQuery
@@ -117,14 +117,21 @@ namespace Template.Web.Areas.Example.TeamMembers
 
             model.TeamsWithUserCount = teamsDto.Teams.Select(team =>
             {
+                var managers = teamMembersDto.TeamMembers.Where(tm => tm.IsManager).ToList();
+                Console.WriteLine($"Manager totali: {managers.Count}");
+                foreach(var m in managers)
+                {
+                    Console.WriteLine($"TeamId: {m.TeamId}, UserId: {m.UserId}");
+                }
             
                 var managerMember = teamMembersDto.TeamMembers
                     .FirstOrDefault(tm => tm.TeamId == team.Id && tm.IsManager);
-    
+
                 string managerName = "";
                 if (managerMember != null)
                 {
                     var managerUser = model.Users.FirstOrDefault(u => u.Id == managerMember.UserId);
+                    Console.WriteLine(managerUser.FirstName);
                     if (managerUser != null)
                     {
                         managerName = $"{managerUser.FirstName} {managerUser.LastName}";
