@@ -57,42 +57,79 @@ namespace Template.Web.Areas.Example.Timesheets
             return View(model);
         }
 
+        [HttpGet]
+        public virtual async Task<IActionResult> GetUsers(Guid timesheetId)
+        {
+            var teamMembersDto = await _sharedService.Query(new TimesheetsIndexQuery
+            {
+                IdCurrentTimesheet = timesheetId,
+                Paging = null
+            });
+            var usersDto = await _sharedService.Query(new UsersIndexQuery
+            {
+                IdCurrentUser = Guid.Empty,
+                Paging = null
+            });
+            var userDictionary = usersDto.Users
+                .Where(tm => tm.TimesheetId == timesheetId)
+                .Select(tm =>
+                {
+                    return new
+                    {
+                        userId = tm.Id,
+                        firstName = tm.FirstName,
+                        lastName = tm.LastName,
+                        email = tm.Email,
+                        role = tm.Role
+                    };
+                })
+                .ToList();
+
+            return Json(userDictionary);
+        }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
         public virtual async Task<IActionResult> Edit(EditViewModel model, string WeekDaysEncoded)
-        {
-            Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDay: {model.WeekDay}, StartTime: {model.StartTime}, EndTime: {model.EndTime}");
-
-            if (!string.IsNullOrEmpty(WeekDaysEncoded))
+        {   
+            var allTimesheet = await _sharedService.Query(new TimesheetsIndexQuery
             {
-                model.WeekDay = WeekDaysEncoded;
-
+                IdCurrentTimesheet = Guid.Empty,
+                Paging = null
+            });
+            var timesheets = allTimesheet.Timesheets.Where(tm => tm.Name == model.Name && tm.Id != model.Id);
+            if (timesheets.Any() == true){
+                Alerts.AddError(this, "È già presente un timesheet con questo nome");
             }
-
-            if (string.IsNullOrEmpty(model.WeekDay))
-            {
-                ModelState.AddModelError(nameof(model.WeekDay), "Seleziona almeno un giorno.");
+            else{
+                Console.WriteLine($"POST Edit ricevuto - Name: {model.Name}, WeekDay: {model.WeekDay}, StartTime: {model.StartTime}, EndTime: {model.EndTime}");
+                if (!string.IsNullOrEmpty(WeekDaysEncoded))
+                {
+                    model.WeekDay = WeekDaysEncoded;
+                }
+                if (string.IsNullOrEmpty(model.WeekDay))
+                {
+                    ModelState.AddModelError(nameof(model.WeekDay), "Seleziona almeno un giorno.");
+                }
+                if (!ModelState.IsValid)
+                {
+                    Alerts.AddError(this, "Errore in aggiornamento");
+                    return RedirectToAction(nameof(Index));
+                }
+                
+                try
+                {
+                    model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
+                    Alerts.AddSuccess(this, "Informazioni aggiornate");
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Eccezione HandleTimesheet: " + e.Message);
+                    ModelState.AddModelError(string.Empty, e.Message);
+                    Alerts.AddError(this, "Errore in aggiornamento");
+                }
+                Console.WriteLine("Uscendo");
             }
-
-            if (!ModelState.IsValid)
-            {
-                Alerts.AddError(this, "Errore in aggiornamento");
-                return RedirectToAction(nameof(Index));
-            }
-
-           try
-            {
-                model.Id = await _sharedService.HandleTimesheet(model.ToAddOrUpdateTimesheetCommand());
-                Alerts.AddSuccess(this, "Informazioni aggiornate");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("Eccezione HandleTimesheet: " + e.Message);
-                ModelState.AddModelError(string.Empty, e.Message);
-                Alerts.AddError(this, "Errore in aggiornamento");
-            }
-            Console.WriteLine("Uscendo");
             return RedirectToAction(nameof(Index));
         }
 

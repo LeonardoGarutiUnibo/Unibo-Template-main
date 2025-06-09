@@ -26,6 +26,7 @@
                     <th>Giorni Timesheet</th>
                     <th>Inizio Lavoro</th>
                     <th>Fine Lavoro</th>
+                    <th>Dettagli</th>
                     <th>Modifica</th>
                     <th>Elimina</th>
                 </tr>
@@ -38,6 +39,11 @@
                         <td>@string.Join("-", timesheet.WeekDay)</td>
                         <td>@timesheet.StartTime.ToString(@"hh\:mm")</td>
                         <td>@timesheet.EndTime.ToString(@"hh\:mm")</td>
+                        <td>
+                            <button 
+                                class="btn btn-outline-info btn-sm"
+                                onclick="showTimesheetUsers('@timesheet.Id')">📄 Dettagli</button>
+                        </td>
                         <td>
                             <button
                                 class="btn btn-outline-warning btn-sm"
@@ -136,6 +142,41 @@
         </div>
     </div>
 
+    <div class="modal fade" id="teamUsersModal" tabindex="-1" aria-labelledby="teamUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="teamUsersModalLabel">Utenti del Team</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Ruolo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var member in Model.EnrichedTimesheetMembers)
+                    {
+                        <tr>
+                            <td>@member.FirstName @member.LastName</td>
+                            <td>@member.Email</td>
+                            <td>@member.Role</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content p-3">
@@ -178,6 +219,32 @@
             });
 
             document.getElementById("timesheetId").value = id;
+        }
+
+        async function showTimesheetUsers(timesheetId) {
+            try {
+                const response = await fetch(`/Example/Timesheets/GetUsers?timesheetId=${timesheetId}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('Errore nel recupero utenti');
+                const users = await response.json();
+
+                const tbody = document.querySelector("#teamUsersModal table tbody");
+                tbody.innerHTML = "";
+
+                users.forEach(user => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                const modal = new bootstrap.Modal(document.getElementById('teamUsersModal'));
+                modal.show();
+
+            } catch (error) {
+                alert("Impossibile caricare gli utenti del team: " + error.message);
+            }
         }
 
         function saveTimesheet(event) {

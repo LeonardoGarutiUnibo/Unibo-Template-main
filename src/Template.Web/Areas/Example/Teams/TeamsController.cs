@@ -63,15 +63,27 @@ namespace Template.Web.Areas.Example.Teams
         {
             if (ModelState.IsValid)
             {
-                try
+                var allTeam = await _sharedService.Query(new TeamsIndexQuery
                 {
-                    model.Id = await _sharedService.HandleTeam(model.ToAddOrUpdateTeamCommand());
-                    Alerts.AddSuccess(this, "Informazioni aggiornate");
+                    IdCurrentTeam = Guid.Empty,
+                    Paging = null
+                });
+                Console.WriteLine("Dentro Edit");
+                var teams = allTeam.Teams.Where(tm => tm.Name == model.Name);
+                if (teams.Any() == true){
+                    Alerts.AddError(this, "È già presente un team con questo nome");
                 }
-                catch (Exception e)
-                {
-                    ModelState.AddModelError(string.Empty, e.Message);
-                    Alerts.AddError(this, "Errore in aggiornamento");
+                else{
+                    try
+                    {
+                        model.Id = await _sharedService.HandleTeam(model.ToAddOrUpdateTeamCommand());
+                        Alerts.AddSuccess(this, "Informazioni aggiornate");
+                    }
+                    catch (Exception e)
+                    {
+                        ModelState.AddModelError(string.Empty, e.Message);
+                        Alerts.AddError(this, "Errore in aggiornamento");
+                    }
                 }
             }
 
