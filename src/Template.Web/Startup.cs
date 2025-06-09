@@ -36,10 +36,11 @@ namespace Template.Web
 
             services.AddDbContext<TemplateDbContext>(options =>
             {
-                   options.UseMySql(
-                        Configuration.GetConnectionString("DefaultConnection"),
-                        new MySqlServerVersion(new Version(8, 0, 36)) // sostituisci con la tua versione
-                    );
+                    //options.UseMySql(
+                    //    Configuration.GetConnectionString("DefaultConnection"),
+                    //    new MySqlServerVersion(new Version(8, 0, 36)) // sostituisci con la tua versione
+                    //);
+                    options.UseInMemoryDatabase(databaseName: "Template");
             });
 
             // SERVICES FOR AUTHENTICATION

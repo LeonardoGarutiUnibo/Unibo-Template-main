@@ -21,7 +21,10 @@ namespace Template.Web
                 try
                 {
                     var context = services.GetRequiredService<TemplateDbContext>();
-                    context.Database.Migrate();
+                    if (context.Database.IsRelational())
+                    {
+                        context.Database.Migrate();
+                    }
 
                     DataGenerator.InitializeUsers(context);
                 }
