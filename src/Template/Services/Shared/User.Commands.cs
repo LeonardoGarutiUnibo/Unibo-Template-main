@@ -3,6 +3,8 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Template.Services.Shared
 {
@@ -44,8 +46,8 @@ namespace Template.Services.Shared
                 
                 if (!string.IsNullOrEmpty(cmd.Password))
                 {
-                    var passwordHasher = new PasswordHasher<User>();
-                    user.Password = passwordHasher.HashPassword(user, cmd.Password);
+                    var sha256 = SHA256.Create();
+                    user.Password = System.Convert.ToBase64String(sha256.ComputeHash(Encoding.ASCII.GetBytes(cmd.Password)));
                 }
                 _dbContext.Users.Add(user);
             }

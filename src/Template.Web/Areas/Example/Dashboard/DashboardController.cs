@@ -83,7 +83,7 @@ namespace Template.Web.Areas.Example.Dashboard
             }).ToList();
 
         var otherUsers = users.Users
-            .Where(u => u.Id != currentUser.Id && u.TeamId == currentUser.TeamId)
+            .Where(u => u.Id != currentUser.Id && u.TeamId == currentUser.TeamId && u.TeamId != Guid.Parse("00000000-0000-0000-0000-000000000000"))
             .Select(u => new UserScheduleViewModel
             {
                 Id = u.Id,
@@ -195,18 +195,15 @@ namespace Template.Web.Areas.Example.Dashboard
         }).ToList();
 
         model.Events = eventsVm;
-        Console.WriteLine($"Numero eventi ricevuti: {eventsVm.Count}");
         foreach (var evt in eventsVm)
         {
-            Console.WriteLine($"UserId: {evt.UserId}, EventState: {evt.EventState}, EventType: {evt.EventType}, StartDate: {evt.StartEventDate}, EndDate: {evt.EndEventDate}");
             var userSchedule =
-            evt.UserId == currentUser.Id
-                ? currentUserSchedule
-                : otherUsers.FirstOrDefault(u => u.Id == evt.UserId)
-                ?? model.ManagerUser?.FirstOrDefault(u => u.Id == evt.UserId);
+                evt.UserId == currentUser.Id
+                    ? currentUserSchedule
+                    : model.TeamUsers?.FirstOrDefault(u => u.Id == evt.UserId)
+                    ?? otherUsers?.FirstOrDefault(u => u.Id == evt.UserId);
             if (userSchedule == null)
             {
-                Console.WriteLine($"userSchedule è null per UserId {evt.UserId}");
                 continue;
             }
 
@@ -220,7 +217,28 @@ namespace Template.Web.Areas.Example.Dashboard
                     EventType = evt.EventType,
                     EventState = evt.EventState
                 };
-                Console.WriteLine(evt.EventState, evt.EventType);
+                currentDate = currentDate.AddDays(1);
+            }
+        }
+
+        foreach (var evt in eventsVm)
+        {
+            var managerSchedule = model.ManagerUser?.FirstOrDefault(u => u.Id == evt.UserId);
+            if (managerSchedule == null)
+            {
+                continue;
+            }
+
+            var currentDate = evt.StartEventDate.Date;
+            var eventEndDate = evt.EndEventDate.Date;
+            while (currentDate <= eventEndDate)
+            {
+                var key = currentDate.ToString("yyyy-MM-dd");
+                managerSchedule.Schedule[key] = new EventInfo
+                {
+                    EventType = evt.EventType,
+                    EventState = evt.EventState
+                };
                 currentDate = currentDate.AddDays(1);
             }
         }
@@ -232,6 +250,8 @@ namespace Template.Web.Areas.Example.Dashboard
         [HttpPost]
         public virtual async Task<IActionResult> SaveAbsenceEvent([FromBody] AbsenceEventInputModel model)
         {
+            model.StartEventDate = model.StartEventDate.ToLocalTime();
+            model.EndEventDate = model.EndEventDate.ToLocalTime();
             if (!ModelState.IsValid)
                 return BadRequest("Dati non validi");
 

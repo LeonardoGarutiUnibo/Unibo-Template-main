@@ -3,21 +3,12 @@
 <head>
     <meta charset="utf-8">
     <title>Gestione Team</title>
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
 
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
     <style>
-        .state-pending {
-            background-color: orange !Important;
-            font-weight: bold;
-        }
-        .state-rifiutato {
-            background-color: red !Important;
-            font-weight: bold;
-        }
-        .state-approvato {
-            background-color: green !Important;
-            font-weight: bold;
-        }
         .fixed-overlay {
             position: fixed;
             top: 0;
@@ -42,71 +33,125 @@
     </style>
 </head>
 <body>
-    <div class="container mt-4" style="padding-left: 200px;">
-        <h2>Le mie richieste</h2>
-        <table class="table">
-            <thead>
-                <tr>
-                    <th>Data richiesta</th>
-                    <th>Inizio</th>
-                    <th>Fine</th>
-                    <th>Tipo</th>
-                    <th>Stato</th>
-                    <th>Azioni</th>
-                </tr>
-            </thead>
-            <tbody>
-            @foreach (var item in Model.AbsenceEvents)
-            {
-                string stateClass = item.EventState?.ToLower() switch
-                {
-                    "pending" => "state-pending",
-                    "rifiutato" => "state-rifiutato",
-                    "approvato" => "state-approvato",
-                    _ => ""
-                };
-                Console.WriteLine(item.EventState);
-                <tr>
-                    <td>@item.RequestDate.ToShortDateString()</td>
-                    <td>@item.StartEventDate.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@item.EndEventDate.ToString("dd/MM/yyyy HH:mm")</td>
-                    <td>@(item.EventType?.Split(' ')[0])</td>
-                    <td class="@stateClass">@item.EventState</td>
-                    <td>
-                        @if (stateClass == "state-pending")
-                        {
-                            @Html.AntiForgeryToken()
-                            <button class="btn btn-danger btn-sm" onclick="deleteRequest('@item.Id')">Cancella</button>
-                        }
-                    </td>
-                </tr>
-            }
-            </tbody>
-        </table>
-    </div>
-</body>
-</html>
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-10 col-md-12">
+                <h2 class="mb-4 text-center">Le mie richieste</h2>
 
-<script>
-    function deleteRequest(id) {
-        if (confirm("Sei sicuro di voler cancellare questa richiesta?")) {
-            fetch('/Example/MyRequests/Delete', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({ id: id })
-            })
-            .then(response => {
-                if (response.ok) {
-                    alert("Richiesta cancellata con successo!");
-                    location.reload();  // ricarica la pagina per aggiornare la tabella
-                } else {
-                    alert("Errore nella cancellazione della richiesta.");
-                }
-            });
+                <div id="feedback" class="alert d-none mt-3" role="alert"></div>
+
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="cursor:pointer;" onclick="sortTable(0)">Data richiesta &nbsp &#x25B2;&#x25BC;</th>
+                            <th style="cursor:pointer;" onclick="sortTable(1)">Inizio &nbsp &#x25B2;&#x25BC;</th>
+                            <th style="cursor:pointer;" onclick="sortTable(2)">Fine &nbsp &#x25B2;&#x25BC;</th>
+                            <th style="cursor:pointer;" onclick="sortTable(3)">Tipo &nbsp &#x25B2;&#x25BC;</th>
+                            <th style="cursor:pointer;" onclick="sortTable(4)">Stato &nbsp &#x25B2;&#x25BC;</th>
+                            <th>Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model.AbsenceEvents)
+                        {
+                            <tr>
+                                <td>@item.RequestDate.ToShortDateString()</td>
+                                <td>@item.StartEventDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.EndEventDate.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@(item.EventType?.Split(' ')[0])</td>
+                                <td>
+                                    <span class="badge 
+                                        @(item.EventState?.ToLower() == "approvato" ? "bg-success" :
+                                          item.EventState?.ToLower() == "rifiutato" ? "bg-danger" :
+                                          item.EventState?.ToLower() == "pending" ? "bg-warning text-dark" : "bg-secondary")">
+                                        @item.EventState
+                                    </span>
+                                </td>
+                                <td>
+                                    @Html.AntiForgeryToken()
+                                    <button class="btn btn-outline-danger btn-sm" onclick="deleteRequest('@item.Id')">
+                                        <i class="bi bi-trash"></i> Cancella
+                                    </button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        function showFeedback(message, type) {
+            const feedback = document.getElementById("feedback");
+            feedback.textContent = message;
+            feedback.className = `alert alert-${type} mt-3`;
+            feedback.classList.remove("d-none");
+            setTimeout(() => feedback.classList.add("d-none"), 3000);
         }
+
+        function deleteRequest(id) {
+            if (confirm("Sei sicuro di voler cancellare questa richiesta?")) {
+                fetch('/Example/MyRequests/Delete', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    },
+                    body: JSON.stringify({ id: id })
+                })
+                .then(response => {
+                    if (response.ok) {
+                        showFeedback("Richiesta cancellata con successo!", "success");
+                        setTimeout(() => location.reload(), 1000);
+                    } else {
+                        showFeedback("Errore nella cancellazione della richiesta.", "danger");
+                    }
+                });
+            }
+        }
+
+        let sortDirection = {};
+
+    function sortTable(colIndex) {
+        const table = document.querySelector("table tbody");
+        const rows = Array.from(table.querySelectorAll("tr"));
+
+        sortDirection[colIndex] = !sortDirection[colIndex];
+
+        rows.sort((a, b) => {
+            let cellA = a.cells[colIndex].textContent.trim();
+            let cellB = b.cells[colIndex].textContent.trim();
+
+            if (colIndex === 0 || colIndex === 1 || colIndex === 2) {
+                cellA = parseItalianDateTime(cellA);
+                cellB = parseItalianDateTime(cellB);
+                return sortDirection[colIndex] ? cellA - cellB : cellB - cellA;
+            }
+
+            if (cellA < cellB) return sortDirection[colIndex] ? -1 : 1;
+            if (cellA > cellB) return sortDirection[colIndex] ? 1 : -1;
+            return 0;
+        });
+
+        rows.forEach(row => table.appendChild(row));
     }
 
-</script>
+    function parseItalianDateTime(dateStr) {
+        if (/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)) {
+            const [d, m, y] = dateStr.split('/');
+            return new Date(y, m - 1, d);
+        }
+        else if (/^\d{2}\/\d{2}\/\d{4} \d{2}:\d{2}$/.test(dateStr)) {
+            const [datePart, timePart] = dateStr.split(' ');
+            const [d, m, y] = datePart.split('/');
+            const [hh, mm] = timePart.split(':');
+            return new Date(y, m - 1, d, hh, mm);
+        }
+        return new Date(dateStr);
+    }
+    </script>
+</body>
+</html>

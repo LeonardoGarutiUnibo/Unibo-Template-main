@@ -125,7 +125,25 @@ namespace Template.Web.Areas.Example.Users
         public virtual async Task<IActionResult> Delete(Guid id)
         {
             Console.WriteLine("ENTRATO IN DELETE - ID: " + id);
+            var allAssignments = await _sharedService.Query(new TeamMembersIndexQuery
+            {
+                TeamId = Guid.Empty,
+                IdCurrentTeamMember = Guid.Empty,
+                Paging = null
+            });
 
+            var isManager = allAssignments.TeamMembers.Where(tm => tm.UserId == id && tm.IsManager == true);
+            if (isManager.Any()){
+                Console.WriteLine("è un manager");
+                var ismanager = isManager.FirstOrDefault();
+                var oldTeamHasUsers = allAssignments.TeamMembers.Where(tm => tm.TeamId == ismanager.TeamId && tm.IsManager == false);
+                if(oldTeamHasUsers.Any() == true){
+                    Console.WriteLine("ha utenti sotto");
+                    Alerts.AddError(this, "Impossibile cancellare un team manager con utenti sotto");
+                    return RedirectToAction(nameof(Index));
+                }
+            }
+            
             try
             {
                 await _sharedService.DeleteUser(id);

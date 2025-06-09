@@ -2,115 +2,69 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-    <meta charset="utf-8">
+    <meta charset="utf-8" />
     <title>Gestione Timesheet</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
-    <style>
-        .fixed-overlay {
-            position: fixed;
-            top: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.2);
-            border-radius: 8px;
-            display: none;
-            z-index: 999;
-        }
-
-        .form-container {
-            text-align: center;
-        }
-
-        .fixed-overlay.active {
-            display: block;
-        }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
 </head>
 <body>
-    <div class="container mt-4" style="padding-left: 200px;">
-        <h2>Gestione Timesheet</h2>
-        <div class="mb-3">
-            <button class="btn btn-primary">Nome timesheet</button>
-            <button class="btn btn-secondary">Ricerca</button>
-            <button class="btn btn-success" onclick="showTimesheetForm()">+ Nuovo Timesheet</button>
+    <div class="container mt-5">
+        <h2 class="mb-4 text-center">Gestione Timesheet</h2>
+
+        <div class="d-flex justify-content-center gap-3 mb-4">
+            <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#timesheetModal">
+                <i class="bi bi-plus-lg"></i> Nuovo Timesheet
+            </button>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#searchModal">
+                <i class="bi bi-search"></i> Ricerca Timesheet
+            </button>
         </div>
-        <div id="timesheetForm" class="fixed-overlay">
-            <div class="form-container">
-                <h3>Crea Timesheet</h3>
-                <form  method="post" action="/Example/Timesheets/Edit">
-                    @Html.AntiForgeryToken()
-                    <div class="mb-3">
-                        <label class="form-label">Nome Timesheet</label>
-                        <input type="text" class="form-control" id="timesheetName" name="Name">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Giorni Settimanali</label>
-                        <div id="daysCheckboxContainer">
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="0"> Lunedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="1"> Martedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="2"> Mercoledì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="3"> Giovedì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="4"> Venerdì</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="5"> Sabato</div>
-                            <div class="form-check"><input type="checkbox" class="form-check-input" value="6"> Domenica</div>
-                        </div>
-                    </div>
-                    <input type="hidden" id="weekDaysEncoded" name="WeekDaysEncoded" />
-                    <div class="mb-3">
-                        <label class="form-label">Ora Inizio</label>
-                        <input type="time" class="form-control" id="StartTime" name="StartTime">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label">Ora Fine</label>
-                        <input type="time" class="form-control" id="EndTime" name="EndTime">
-                    </div>
-                    <button type="submit" class="btn btn-primary" onclick="saveTimesheet(event)">Salva</button>
-                    <button type="button" class="btn btn-secondary" onclick="hideTimesheetForm()">Chiudi</button>
-                </form>
-            </div>
-        </div>
-        <table class="table table-bordered">
-            <thead>
+
+        <table class="table table-bordered table-striped table-hover align-middle">
+            <thead class="table-dark">
                 <tr>
-                    <th>TimesheetId</th>
-                    <th>Nome timesheet</th>
-                    <th>Giorni timesheet</th>
-                    <th>Inizio lavoro</th>
-                    <th>Fine lavoro</th>
-                    <th>Modifica timesheet</th>
-                    <th>Delete timesheet</th>
+                    <th>Nome Timesheet</th>
+                    <th>Giorni Timesheet</th>
+                    <th>Inizio Lavoro</th>
+                    <th>Fine Lavoro</th>
+                    <th>Dettagli</th>
+                    <th>Modifica</th>
+                    <th>Elimina</th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var timesheet in Model.Timesheets)
                 {
                     <tr>
-                        <td>@timesheet.Id</td>
                         <td>@(string.IsNullOrEmpty(timesheet.Name) ? "N/D" : timesheet.Name)</td>
                         <td>@string.Join("-", timesheet.WeekDay)</td>
                         <td>@timesheet.StartTime.ToString(@"hh\:mm")</td>
                         <td>@timesheet.EndTime.ToString(@"hh\:mm")</td>
                         <td>
-                            <button class="btn btn-warning"
+                            <button 
+                                class="btn btn-outline-info btn-sm"
+                                onclick="showTimesheetUsers('@timesheet.Id')">📄 Dettagli</button>
+                        </td>
+                        <td>
+                            <button
+                                class="btn btn-outline-warning btn-sm"
                                 data-id="@timesheet.Id"
                                 data-name="@timesheet.Name"
                                 data-weekdays="@string.Join("-", timesheet.WeekDay)"
                                 data-starttime="@timesheet.StartTime.ToString(@"hh\:mm")"
                                 data-endtime="@timesheet.EndTime.ToString(@"hh\:mm")"
-                                onclick="handleEditClick(this)">
-                                ✏️
+                                onclick="handleEditClick(this)"
+                                title="Modifica Timesheet">
+                                <i class="bi bi-pencil"></i> Modifica
                             </button>
                         </td>
                         <td>
                             <form method="post" asp-action="Delete" asp-controller="Timesheets" asp-area="Example"
-                                  onsubmit="return confirm('Sei sicuro di voler cancellare questo timesheet?');">
+                                  onsubmit="return confirm('Sei sicuro di voler cancellare questo timesheet?');" class="d-inline">
                                 @Html.AntiForgeryToken()
                                 <input type="hidden" name="id" value="@timesheet.Id" />
-
-                                <button type="submit" class="btn btn-danger">🗑️</button>
+                                <button type="submit" class="btn btn-outline-danger btn-sm" title="Elimina Timesheet">
+                                    <i class="bi bi-trash"></i> Cancella
+                                </button>
                             </form>
                         </td>
                     </tr>
@@ -118,106 +72,206 @@
             </tbody>
         </table>
     </div>
-</body>
-</html>
 
-<script>
-    function deleteTimesheet(id) {
-        if (confirm("Sei sicuro di voler cancellare questo timesheet?")) {
-            fetch(`/Example/Timesheets/Delete`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                },
-                body: JSON.stringify({ id: id })
-            })
-            .then(response => {
-                if (response.redirected) {
-                    window.location.href = response.url;
-                } else {
-                    alert("Errore nella cancellazione");
-                }
+    <div class="modal fade" id="timesheetModal" tabindex="-1" aria-labelledby="timesheetModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <form method="post" action="/Example/Timesheets/Edit" onsubmit="return saveTimesheet(event)">
+                    @Html.AntiForgeryToken()
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="timesheetModalLabel">Crea / Modifica Timesheet</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="timesheetName" class="form-label">Nome Timesheet</label>
+                            <input type="text" class="form-control" id="timesheetName" name="Name" required />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Giorni Settimanali</label>
+                            <div id="daysCheckboxContainer" class="d-flex flex-wrap gap-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="0" id="day0" />
+                                    <label class="form-check-label" for="day0">Lunedì</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="1" id="day1" />
+                                    <label class="form-check-label" for="day1">Martedì</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="2" id="day2" />
+                                    <label class="form-check-label" for="day2">Mercoledì</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="3" id="day3" />
+                                    <label class="form-check-label" for="day3">Giovedì</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="4" id="day4" />
+                                    <label class="form-check-label" for="day4">Venerdì</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="5" id="day5" />
+                                    <label class="form-check-label" for="day5">Sabato</label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" value="6" id="day6" />
+                                    <label class="form-check-label" for="day6">Domenica</label>
+                                </div>
+                            </div>
+                        </div>
+                        <input type="hidden" id="weekDaysEncoded" name="WeekDaysEncoded" />
+                        <div class="row g-3">
+                            <div class="col-6">
+                                <label for="StartTime" class="form-label">Ora Inizio</label>
+                                <input type="time" class="form-control" id="StartTime" name="StartTime" required />
+                            </div>
+                            <div class="col-6">
+                                <label for="EndTime" class="form-label">Ora Fine</label>
+                                <input type="time" class="form-control" id="EndTime" name="EndTime" required />
+                            </div>
+                        </div>
+                        <input type="hidden" name="Id" id="timesheetId" />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Salva</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="teamUsersModal" tabindex="-1" aria-labelledby="teamUsersModalLabel" aria-hidden="true">
+      <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="teamUsersModalLabel">Utenti del Team</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered table-hover table-striped align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Nome</th>
+                        <th>Email</th>
+                        <th>Ruolo</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach(var member in Model.EnrichedTimesheetMembers)
+                    {
+                        <tr>
+                            <td>@member.FirstName @member.LastName</td>
+                            <td>@member.Email</td>
+                            <td>@member.Role</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content p-3">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchModalLabel">Ricerca Timesheet</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Nome timesheet" onkeyup="filterUsers()" autofocus />
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet" />
+
+    <script>
+        function handleEditClick(button) {
+            const id = button.getAttribute('data-id');
+            const name = button.getAttribute('data-name');
+            const weekdays = button.getAttribute('data-weekdays');
+            const startTime = button.getAttribute('data-starttime');
+            const endTime = button.getAttribute('data-endtime');
+
+            const modal = new bootstrap.Modal(document.getElementById('timesheetModal'));
+            modal.show();
+
+            document.getElementById("timesheetName").value = name;
+            document.getElementById("StartTime").value = startTime;
+            document.getElementById("EndTime").value = endTime;
+
+            document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']").forEach(cb => cb.checked = false);
+            weekdays.split("-").forEach(idx => {
+                const cb = document.querySelector(`#daysCheckboxContainer input[type='checkbox'][value='${idx}']`);
+                if (cb) cb.checked = true;
+            });
+
+            document.getElementById("timesheetId").value = id;
+        }
+
+        async function showTimesheetUsers(timesheetId) {
+            try {
+                const response = await fetch(`/Example/Timesheets/GetUsers?timesheetId=${timesheetId}`, { cache: 'no-store' });
+                if (!response.ok) throw new Error('Errore nel recupero utenti');
+                const users = await response.json();
+
+                const tbody = document.querySelector("#teamUsersModal table tbody");
+                tbody.innerHTML = "";
+
+                users.forEach(user => {
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${user.firstName} ${user.lastName}</td>
+                        <td>${user.email}</td>
+                        <td>${user.role}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                const modal = new bootstrap.Modal(document.getElementById('teamUsersModal'));
+                modal.show();
+
+            } catch (error) {
+                alert("Impossibile caricare gli utenti del team: " + error.message);
+            }
+        }
+
+        function saveTimesheet(event) {
+            const name = document.getElementById("timesheetName").value.trim();
+            const checkedBoxes = document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']:checked");
+
+            if (!name || checkedBoxes.length === 0) {
+                alert("Compila tutti i campi!");
+                event.preventDefault();
+                return false;
+            }
+
+            const daysIndices = Array.from(checkedBoxes).map(cb => cb.value);
+            document.getElementById("weekDaysEncoded").value = daysIndices.join("-");
+
+            return true;
+        }
+
+        function filterUsers() {
+            const input = document.getElementById("searchInput").value.toLowerCase();
+            const rows = document.querySelectorAll("tbody tr");
+
+            rows.forEach(row => {
+                const name = row.cells[0].textContent.toLowerCase();
+                row.style.display = name.includes(input) ? "" : "none";
             });
         }
-    }
-
-    function handleEditClick(button) {
-        const id = button.getAttribute('data-id');
-        const name = button.getAttribute('data-name');
-        const weekdays = button.getAttribute('data-weekdays');
-        const startTime = button.getAttribute('data-starttime');
-        const endTime = button.getAttribute('data-endtime');
-
-        editTimesheet(id, name, weekdays, startTime, endTime);
-    }
-
-    function editTimesheet(id, name, weekdays, startTime, endTime) {
-        showTimesheetForm();
-
-        document.getElementById("timesheetName").value = name;
-        document.querySelector("input[name='StartTime']").value = startTime;
-        document.querySelector("input[name='EndTime']").value = endTime;
-
-        document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']").forEach(cb => cb.checked = false);
-
-        const dayIndices = weekdays.split("-");
-        dayIndices.forEach(idx => {
-            const cb = document.querySelector(`#daysCheckboxContainer input[type='checkbox'][value='${idx}']`);
-            if (cb) cb.checked = true;
-        });
-
-        const form = document.querySelector("#timesheetForm form");
-    
-        let existing = form.querySelector("input[name='Id']");
-        if (existing) existing.remove();
-
-        const hiddenId = document.createElement("input");
-        hiddenId.type = "hidden";
-        hiddenId.name = "Id";
-        hiddenId.value = id;
-        form.appendChild(hiddenId);
-    }
-    
-
-    const weekDays = ["Lunedì", "Martedì", "Mercoledì", "Giovedì", "Venerdì", "Sabato", "Domenica"];
-    const selectedDays = [];
-
-    function showTimesheetForm() {
-        const form = document.querySelector("#timesheetForm form");
-
-        let existingId = form.querySelector("input[name='Id']");
-        if (!existingId) {
-            form.reset();
-            document.querySelectorAll("#daysCheckboxContainer input[type='checkbox']").forEach(cb => cb.checked = false);
-        }
-
-        document.getElementById("timesheetForm").classList.add("active");
-    }
-
-    function hideTimesheetForm() {
-        document.getElementById("timesheetForm").classList.remove("active");
-    }
-
-    function saveTimesheet(event) {
-        event.preventDefault();
-        let name = document.getElementById("timesheetName").value;
-        let checkboxes = document.querySelectorAll("#daysCheckboxContainer input:checked");
-        let days = Array.from(checkboxes).map(cb => cb.value);
-
-        if (name && days.length > 0) {
-            let daysIndices = days;
-            let result = daysIndices.join("-");
-
-            document.getElementById("weekDaysEncoded").value = result;
-
-            const form = event.target.closest("form");
-            const idInput = form.querySelector("input[name='Id']");
-            console.log("Campo Id:", idInput ? idInput.value : "Nessuno");
-
-            form.submit();
-        } else {
-            alert("Compila tutti i campi!");
-        }
-    }
-</script>
+    </script>
+</body>
+</html>

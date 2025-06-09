@@ -44,6 +44,13 @@ namespace Template.Services.Shared
                {
                    user.TeamId = cmd.TeamId;
                }
+           }           
+           else{
+                var oldManager = await _dbContext.TeamMembers.FirstOrDefaultAsync(u => u.TeamId == cmd.TeamId && u.IsManager == cmd.IsManager);
+                if (oldManager != null)
+                {
+                    await DeleteTeamMember(oldManager.Id);
+                }
            }
 
            await _dbContext.SaveChangesAsync();

@@ -38,6 +38,17 @@ namespace Template.Services.Shared
         public Paging Paging { get; set; }
     }
 
+    public class TeamMembersAllIndexQuery
+    {
+        public Guid TeamId { get; set; }
+        public Guid UserId { get; set; }
+        public bool IsManager { get; set; }
+        public Guid IdCurrentTeamMember { get; set; }
+        public string Filter { get; set; }
+
+        public Paging Paging { get; set; }
+    }
+
 
     public class TeamMembersIndexDTO
     {
@@ -101,6 +112,26 @@ namespace Template.Services.Shared
         {
             var queryable = _dbContext.TeamMembers
                 .Where(x => x.Id != qry.IdCurrentTeamMember);
+            
+            return new TeamMembersIndexDTO
+            {
+                TeamMembers = await queryable
+                    .ApplyPaging(qry.Paging)
+                    .Select(x => new TeamMembersIndexDTO.TeamMember
+                    {
+                        Id = x.Id,
+                        UserId = x.UserId,
+                        TeamId = x.TeamId,
+                        IsManager = x.IsManager
+                    })
+                    .ToArrayAsync(),
+                Count = await queryable.CountAsync()
+            };
+        }
+
+        public async Task<TeamMembersIndexDTO> Query(TeamMembersAllIndexQuery qry)
+        {
+            var queryable = _dbContext.TeamMembers;
             
             return new TeamMembersIndexDTO
             {

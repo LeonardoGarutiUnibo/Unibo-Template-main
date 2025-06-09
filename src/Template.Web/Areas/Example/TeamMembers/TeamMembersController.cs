@@ -12,6 +12,7 @@ using Template.Web.SignalR.Hubs.Events;
 namespace Template.Web.Areas.Example.TeamMembers
 {
     [Area("Example")]
+    [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
     public partial class TeamMembersController : AuthenticatedBaseController
     {
 
@@ -81,7 +82,7 @@ namespace Template.Web.Areas.Example.TeamMembers
         public virtual async Task<IActionResult> Index(IndexViewModel model)
         {
         
-            var teamMembersDto = await _sharedService.Query(model.ToTeamMembersIndexQuery());
+            var teamMembersDto = await _sharedService.Query(model.ToTeamMembersAllIndexQuery());
             model.SetTeamMembers(teamMembersDto);
 
             var usersDto = await _sharedService.Query(new UsersIndexQuery
@@ -116,14 +117,21 @@ namespace Template.Web.Areas.Example.TeamMembers
 
             model.TeamsWithUserCount = teamsDto.Teams.Select(team =>
             {
+                var managers = teamMembersDto.TeamMembers.Where(tm => tm.IsManager).ToList();
+                Console.WriteLine($"Manager totali: {managers.Count}");
+                foreach(var m in managers)
+                {
+                    Console.WriteLine($"TeamId: {m.TeamId}, UserId: {m.UserId}");
+                }
             
                 var managerMember = teamMembersDto.TeamMembers
                     .FirstOrDefault(tm => tm.TeamId == team.Id && tm.IsManager);
-    
+
                 string managerName = "";
                 if (managerMember != null)
                 {
                     var managerUser = model.Users.FirstOrDefault(u => u.Id == managerMember.UserId);
+                    Console.WriteLine(managerUser.FirstName);
                     if (managerUser != null)
                     {
                         managerName = $"{managerUser.FirstName} {managerUser.LastName}";
@@ -223,8 +231,21 @@ namespace Template.Web.Areas.Example.TeamMembers
                 Paging = null
             });
 
+            var hasManager = allAssignments.TeamMembers.Where(tm => tm.TeamId == teamId && tm.IsManager == true);
+
+            if(!hasManager.Any() == true && request.IsManager != true){
+                return BadRequest( new {error = "Il team selezionato non ha ancora un team manager, assegnare il team manager."});
+            }
+            var isManager = allAssignments.TeamMembers.Where(tm => tm.UserId == userId && tm.IsManager == true);
+            if (isManager.Any()){
+                var ismanager = isManager.FirstOrDefault();
+                var oldTeamHasUsers = allAssignments.TeamMembers.Where(tm => tm.TeamId == ismanager.TeamId && tm.IsManager == false);
+                if(oldTeamHasUsers.Any() == true && request.IsManager == true){
+                    return BadRequest( new {error = "Il team ha degli utenti dentro e non può rimanere senza manager, assegnare nuovo manager"});
+                }
+            }
             var userAssignments = allAssignments.TeamMembers.Where(tm => tm.UserId == userId).ToList();
-            Console.WriteLine($"UserId: {request.UserId}, TeamId: {request.TeamId}, IsManager: {request.IsManager}");
+
             bool isAlreadyAssignedToAnotherTeam = userAssignments
             .Any(tm => tm.TeamId != teamId && tm.IsManager == request.IsManager);
             if (isAlreadyAssignedToAnotherTeam)
@@ -241,16 +262,15 @@ namespace Template.Web.Areas.Example.TeamMembers
                 var isManagerInTeam = userAssignments.Any(tm => tm.TeamId == teamId && tm.IsManager);
                 if (isManagerInTeam)
                 {
-                    return BadRequest("L'utente è già manager di questo team e non può essere assegnato come membro.");
+                    return BadRequest(new {error = "L'utente è già manager di questo team e non può essere assegnato come membro."});
                 }
             }
-
             if (request.IsManager)
             {   
                 var isMemberInTeam = userAssignments.Any(tm => tm.TeamId == teamId && !tm.IsManager);
                 if (isMemberInTeam)
                 {
-                    return BadRequest("L'utente è già membro di questo team e non può essere assegnato come manager.");
+                    return BadRequest( new {error = "L'utente è già membro di questo team e non può essere assegnato come manager."});
                 }
             }
             var existingMember = userAssignments.FirstOrDefault(tm => tm.TeamId == teamId);

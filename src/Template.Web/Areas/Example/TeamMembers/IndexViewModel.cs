@@ -47,9 +47,19 @@ namespace Template.Web.Areas.Example.TeamMembers
                 Paging = new Template.Infrastructure.Paging
                 {
                     OrderBy = OrderBy,
-                    OrderByDescending = OrderByDescending,
-                    Page = Page,
-                    PageSize = PageSize
+                    OrderByDescending = OrderByDescending
+                }
+            };
+        }
+
+        public TeamMembersAllIndexQuery ToTeamMembersAllIndexQuery()
+        {
+            return new TeamMembersAllIndexQuery
+            {
+                Paging = new Template.Infrastructure.Paging
+                {
+                    OrderBy = OrderBy,
+                    OrderByDescending = OrderByDescending
                 }
             };
         }

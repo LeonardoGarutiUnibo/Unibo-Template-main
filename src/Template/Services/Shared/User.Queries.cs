@@ -62,6 +62,11 @@ namespace Template.Services.Shared
         }
     }
 
+    public class UsersByTimesheetQuery
+    {
+        public Guid TimesheetId { get; set; }
+    }
+
     public class UserDetailQuery
     {
         public Guid Id { get; set; }
@@ -227,6 +232,34 @@ namespace Template.Services.Shared
                 .Where(x => userIds.Contains(x.Id))
                 .Select(x => new { x.Id, FullName = x.FirstName + " " + x.LastName })
                 .ToDictionaryAsync(x => x.Id, x => x.FullName);
+        }
+
+        public async Task<UsersSelectDTO> Query(UsersByTimesheetQuery qry)
+        {
+            var queryable = _dbContext.Users
+                .Where(u => u.TimesheetId == qry.TimesheetId);
+        
+            var users = await queryable
+                .Select(u => new UsersSelectDTO.User
+                {
+                    Id = u.Id,
+                    Email = u.Email,
+                    FirstName = u.FirstName,
+                    LastName = u.LastName,
+                    NickName = u.NickName,
+                    Role = u.Role,
+                    TeamId = u.TeamId,
+                    TimesheetWeekDay = u.Timesheet.WeekDay,
+                    TimesheetStartTime = u.Timesheet.StartTime,
+                    TimesheetEndTime = u.Timesheet.EndTime
+                })
+                .ToArrayAsync();
+        
+            return new UsersSelectDTO
+            {
+                Users = users,
+                Count = users.Length
+            };
         }
     }
 }

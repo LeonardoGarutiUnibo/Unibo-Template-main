@@ -11,6 +11,8 @@ namespace Template.Web.Areas.Example.Timesheets
 {
     public class IndexViewModel : PagingViewModel
     {
+        public List<TimesheetMemberWithUserDetailViewModel> EnrichedTimesheetMembers { get; set; } = new List<TimesheetMemberWithUserDetailViewModel>();
+
         public IndexViewModel()
         {
             OrderBy = nameof(TimesheetIndexViewModel.Name);
@@ -20,7 +22,6 @@ namespace Template.Web.Areas.Example.Timesheets
 
         [Display(Name = "Cerca")]
         public string Filter { get; set; }
-
         public IEnumerable<TimesheetIndexViewModel> Timesheets { get; set; }
 
         internal void SetTimesheets(TimesheetsIndexDTO timesheetsIndexDTO)
@@ -54,6 +55,16 @@ namespace Template.Web.Areas.Example.Timesheets
         {
             return JsonSerializer.ToJsonCamelCase(this);
         }
+    }
+
+    public class TimesheetMemberWithUserDetailViewModel
+    {
+
+        public Guid UserId { get; set; }
+        public string FirstName { get; set; }
+        public string LastName { get; set; }
+        public string Email { get; set; }
+        public string Role { get; set; }
     }
 
     public class TimesheetIndexViewModel

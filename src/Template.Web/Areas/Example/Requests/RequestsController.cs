@@ -33,6 +33,11 @@ namespace Template.Web.Areas.Example.Requests
 
             var currentUser = await _sharedService.Query(new UserDetailQuery { Id = userId });
 
+            if (currentUser == null)
+            {
+                return Unauthorized(); // o un'altra azione appropriata
+            }
+
             var managerInfo = await _sharedService.QueryTeamMemberByUserIdAndRole(currentUser.Id, true);
             if (managerInfo == null)
                 return View(model);

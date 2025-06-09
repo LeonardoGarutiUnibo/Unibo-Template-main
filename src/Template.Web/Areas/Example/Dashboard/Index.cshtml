@@ -142,7 +142,7 @@
         font-weight: bold;
     }
 
-    #managerTable, #teamTable {
+    #managerTable, #teamTable, #myTeamTable {
         display: none;
     }
 
@@ -167,88 +167,118 @@
         left: 0;
         opacity: 0.5;
         font-size: 1.2em;
-        pointer-events: none;
+    }
+
+    .arrow {
+        display: inline-block;
+        margin-left: 10px;
+        transition: transform 0.3s ease;
+    }
+    
+    .arrow.up {
+        transform: rotate(180deg); /* Freccia verso l’alto */
     }
 </style>
 
 <div class="main-content">
     <div class="container">
-        <h1>Gestione Presenze e Smart Working</h1>
+        <h1 class="mb-4">Gestione Presenze e Smart Working</h1>
 
-        <form method="get">
-            @Html.AntiForgeryToken()
-            <label for="startMonth">Da mese:</label>
-            <input type="month" id="startMonth" name="startMonth" value="@Model.StartMonth?.ToString("yyyy-MM")" />
+        <form method="get" class="border rounded p-3 bg-light">
 
-            <label for="endMonth">A mese:</label>
-            <input type="month" id="endMonth" name="endMonth" value="@Model.EndMonth?.ToString("yyyy-MM")" />
+            <div class="row mb-3 center">
+                <div class="col-md-6">
+                    <label for="startMonth" class="form-label"><b>Da mese:</b></label>
+                    <input type="month" id="startMonth" name="startMonth"
+                           class="form-control"
+                           value="@Model.StartMonth?.ToString("yyyy-MM")" />
+                </div>
 
-            <button type="submit">Filtra</button>
+                <div class="col-md-6">
+                    <label for="endMonth" class="form-label"><b>A mese:<b></label>
+                    <input type="month" id="endMonth" name="endMonth"
+                           class="form-control"
+                           value="@Model.EndMonth?.ToString("yyyy-MM")" />
+                </div>
+            </div>
+
+            <div class="text-end">
+                <button type="submit" class="btn btn-primary">Filtra</button>
+            </div>
         </form>
 
-        <h2>Il tuo orario</h2>
-        <div class="table-wrapper" style="margin-bottom: 40px;">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Dipendente</th>
-                        @foreach (var day in Model.DaysInMonth)
-                        {
-                            <th>@DateTime.Parse(day).ToString("dd/MM")</th>
-                        }
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td>@Model.CurrentUserSchedule.Name</td>
-                        @foreach (var day in Model.DaysInMonth)
-                        {
-                            var date = DateTime.Parse(day);
-                            var dayOfWeek = (int)date.DayOfWeek;
-                            var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+        <div class="section-toggle card shadow-sm mb-3" style="margin-top:10px">
+            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="myTable" style="cursor: pointer;">
+                <span class="fs-5 fw-semibold text-primary">Il mio orario</span>
+                <span class="arrow up" style="font-size:1.5rem">⭣</span>
+            </div>
+            <div id="myTable" class="table-wrapper" style="margin-bottom: 20px;">
+                <table class="table table-bordered table-hover table-striped align-middle">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Dipendente</th>
+                            @foreach (var day in Model.DaysInMonth)
+                            {
+                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                            }
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>@Model.CurrentUserSchedule.Name</td>
+                            @foreach (var day in Model.DaysInMonth)
+                            {
+                                var date = DateTime.Parse(day);
+                                var dayOfWeek = (int)date.DayOfWeek;
+                                var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
-                            var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
-                            var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
-                            
-                            var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
-                            var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+                                var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
+                                var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
 
-                            bool hasEvent = !string.IsNullOrEmpty(icon);
-                            var clickableClass = hasEvent ? "disabled-cell" : "";
-                            var onclickAttr = hasEvent ? "" : "onclick=\"openPopup(this)\"";
+                                var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                                var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
 
-                            <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
-                                data-user="@Model.CurrentUserSchedule.Id"
-                                data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
-                                data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
-                                data-day="@date.ToString("yyyy-MM-dd")"
-                                @Html.Raw(isEnabled? "onclick=\"openPopup(this)\"" : "")>
-                                @if (isEnabled)
-                                {
-                                    <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
-                                    @if (state == "Pending")
+                                bool hasEvent = !string.IsNullOrEmpty(icon);
+                                var clickableClass = hasEvent ? "disabled-cell" : "";
+                                var onclickAttr = hasEvent ? "" : "onclick=\"openPopup(this)\"";
+
+                                <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
+                                    data-user="@Model.CurrentUserSchedule.Id"
+                                    data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
+                                    data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
+                                    data-day="@date.ToString("yyyy-MM-dd")"
+                                    @Html.Raw(isEnabled && icon == ""? "onclick=\"openPopup(this)\"" : "")>
+                                    @if (isEnabled)
                                     {
-                                        <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                        <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                        @if (state == "Pending")
+                                        {
+                                            <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                        }
+                                        @if (state == "Rifiutato")
+                                        {
+                                            <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
+                                        }
+                                        @if (state == "Approvato")
+                                        {
+                                            <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
+                                        }
                                     }
-                                    @if (state == "Rifiutato")
-                                    {
-                                        <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
-                                    }
-                                    @if (state == "Approvato")
-                                    {
-                                        <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
-                                    }
-                                }
-                            </td>
-                        }
-                    </tr>
-                </tbody>
-            </table>
+                                </td>
+                            }
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
         </div>
 
-        @if (Model.ManagerUser != null)
+        @if (Model.ManagerUser.Any())
         {
-            <h2 class="toggle-table" data-target="managerTable">Il mio Manager</h2>
+        <div class="section-toggle card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="managerTable" style="cursor: pointer;">
+                <span class="fs-5 fw-semibold text-primary">Il mio Manager</span>
+                <span class="arrow" style="font-size:1.5rem">⭣</span>
+            </div>
             <div id="managerTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
@@ -273,8 +303,6 @@
 
                                     var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventType : "";
                                     var state = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventState : "";
-                                    Console.WriteLine("Il mio Manager" + state);
-                                    Console.WriteLine("Il mio Manager 2 " + status);
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -293,11 +321,11 @@
                                             }
                                             @if (state == "Rifiutato")
                                             {
-                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                                <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
                                             }
                                             @if (state == "Approvato")
                                             {
-                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                                <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
                                             }
                                         }
                                     </td>
@@ -307,11 +335,16 @@
                     </tbody>
                 </table>
             </div>
+        </div>
         }
 
         @if (Model.Users != null && Model.Users.Any())
         {
-            <h2 class="toggle-table" data-target="teamTable">Il mio Team</h2>
+        <div class="section-toggle card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="teamTable" style="cursor: pointer;">
+                <span class="fs-5 fw-semibold text-primary">Il mio Team</span>
+                <span class="arrow" style="font-size:1.5rem">⭣</span>
+            </div>
             <div id="teamTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
@@ -336,8 +369,6 @@
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
-                                    Console.WriteLine("Il mio Manager" + state);
-                                    Console.WriteLine("Il mio Manager 2 " + status);
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -356,11 +387,11 @@
                                             }
                                             @if (state == "Rifiutato")
                                             {
-                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                                <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
                                             }
                                             @if (state == "Approvato")
                                             {
-                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                                <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
                                             }
                                         }
                                     </td>
@@ -370,15 +401,20 @@
                     </tbody>
                 </table>
             </div>
+        </div>    
         }
         @if (Model.IsManager && Model.TeamUsers.Count() >0)
         {
-            <h2 class="toggle-table" data-target="myTeamTable">Tabella riservata ai manager</h2>
+        <div class="section-toggle card shadow-sm mb-3">
+            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="myTeamTable" style="cursor: pointer;">
+                <span class="fs-5 fw-semibold text-primary">Tabella riservata ai manager</span>
+                <span class="arrow" style="font-size:1.5rem">⭣</span>
+            </div>
             <div id="myTeamTable" class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
                         <tr>
-                            <th>Utente</th>
+                            <th>Dipendente</th>
                             @foreach (var day in Model.DaysInMonth)
                             {
                                 <th>@DateTime.Parse(day).ToString("dd/MM")</th>
@@ -398,8 +434,6 @@
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
-                                    Console.WriteLine("user" + state);
-                                    Console.WriteLine("user 2 " + status);
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -418,11 +452,11 @@
                                             }
                                             @if (state == "Rifiutato")
                                             {
-                                                <span class="overlay-icon" style="color:red" title="In attesa">✘</span>
+                                                <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
                                             }
                                             @if (state == "Approvato")
                                             {
-                                                <span class="overlay-icon" style="color:green" title="In attesa">✔</span>
+                                                <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
                                             }
                                         }
                                     </td>
@@ -432,36 +466,46 @@
                     </tbody>
                 </table>
             </div>
+        </div>
         }
 
     </div>
 </div>
 
-<div id="popup">
-    <label>Data e ora inizio:</label>
-    <input type="datetime-local"
-    min="@Model.CurrentUserSchedule.TimesheetStartTime" 
-    max="@Model.CurrentUserSchedule.TimesheetEndTime" 
-    id="startDateTime" />
+<div id="popup" class="card shadow p-3" style="width: 320px; position: absolute; z-index: 1050; background: white; border-radius: 0.375rem; display: none;">
+    <div class="mb-3">
+        <label for="startDateTime" class="form-label">Data e ora inizio:</label>
+        <div class="input-group">
+          <input type="datetime-local" 
+                 min="@Model.CurrentUserSchedule.TimesheetStartTime" 
+                 max="@Model.CurrentUserSchedule.TimesheetEndTime" 
+                 id="startDateTime" 
+                 class="form-control" />
+        </div>
+    </div>
 
-    <label>Data e ora fine:</label>
-    <input type="datetime-local" 
-    min="@Model.CurrentUserSchedule.TimesheetStartTime" 
-    max="@Model.CurrentUserSchedule.TimesheetEndTime" 
-    id="endDateTime" />
+    <div class="mb-3">
+        <label for="endDateTime" class="form-label">Data e ora fine:</label>
+        <input type="datetime-local" 
+               min="@Model.CurrentUserSchedule.TimesheetStartTime" 
+               max="@Model.CurrentUserSchedule.TimesheetEndTime" 
+               id="endDateTime" 
+               class="form-control" />
+    </div>
 
-    <label>Tipo evento:</label>
-    <select id="eventType">
-        <option value="">-- Scegli --</option>
-        <option value="Ferie">Ferie</option>
-        <option value="Permessi">Permessi</option>
-        <option value="smartworking">Smart Working</option>
-    </select>
+    <div class="mb-3">
+        <label for="eventType" class="form-label">Tipo evento:</label>
+        <select id="eventType" class="form-select">
+            <option value="">-- Scegli --</option>
+            <option value="Ferie">Ferie</option>
+            <option value="Permessi">Permessi</option>
+            <option value="smartworking">Smart Working</option>
+        </select>
+    </div>
 
-    <div style="text-align: right; margin-top: 12px;">
-        <button class="save" onclick="saveStatus()" disabled id="saveBtn">Salva</button>
-        <button class="delete" onclick="deleteStatus()">Elimina</button>
-        <button class="cancel" onclick="closePopup()">Annulla</button>
+    <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-secondary" onclick="closePopup()">Annulla</button>
+        <button class="btn btn-primary" onclick="saveStatus()" disabled id="saveBtn">Salva</button>
     </div>
 </div>
 
@@ -603,6 +647,8 @@ document.getElementById('startDateTime').addEventListener('input', function() {
         var [hoursEnd, minutesEnd, secondsEnd] = CurrentUserTimesheetEndTime.split(':').map(Number);
         const userTimeEnd = new Date(1970, 0, 1);
         userTimeEnd.setHours(hoursEnd, minutesEnd, secondsEnd, 0);
+        console.log(start)
+        console.log(end)
         if (start > end) {
             alert('La data/ora di inizio deve essere precedente a quella di fine.');
             return;
@@ -653,16 +699,13 @@ document.getElementById('startDateTime').addEventListener('input', function() {
         }
     }
 
-    function deleteStatus() {
-        alert(`Elimina evento per utente ${currentUserId}, giorno ${currentDay}`);
-        closePopup();
-    }
-
     document.addEventListener('click', function(event) {
         if (!popup.contains(event.target) && !event.target.classList.contains('status') && !event.target.closest('.status-cell')) {
             closePopup();
         }
     });
+
+
     document.addEventListener('DOMContentLoaded', () => {
         const events = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Events));
         const statusIcons = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.StatusIcons));
@@ -704,20 +747,22 @@ document.getElementById('startDateTime').addEventListener('input', function() {
         });
     });
 
+
     document.querySelectorAll('.toggle-table').forEach(header => {
-        header.style.cursor = 'pointer';
+        header.addEventListener('click', function () {
+            const targetId = this.dataset.target;
+            const target = document.getElementById(targetId);
+            const arrow = this.querySelector('.arrow');
+            const isVisible = target.style.display !== 'none';
 
-        header.addEventListener('click', () => {
-          const targetId = header.getAttribute('data-target');
-          const tableDiv = document.getElementById(targetId);
-          if (!tableDiv) return;
-
-          if (tableDiv.style.display === 'none') {
-            tableDiv.style.display = 'block';
-          } else {
-            tableDiv.style.display = 'none';
-          }
+            if (isVisible) {
+                target.style.display = 'none';
+                arrow.classList.remove('up');
+            } else {
+                target.style.display = 'block';
+                arrow.classList.add('up');
+            }
         });
-      });
+    });
 </script>
 }
