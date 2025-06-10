@@ -26,10 +26,7 @@ namespace Template.Web.Areas.Example.Dashboard
     {
         var start = startMonth ?? new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
         var end = endMonth ?? start;
-
-        if (start == end){
-            end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));
-        }
+        end = new DateTime(end.Year, end.Month, DateTime.DaysInMonth(end.Year, end.Month));
 
         if (start > end)
         {
@@ -174,7 +171,6 @@ namespace Template.Web.Areas.Example.Dashboard
                 model.ManagerUser = managerUser;
             }
         }
-
         var query = new AbsenceEventsIndexQuery
         {
             StartEventDate = start,
@@ -185,7 +181,6 @@ namespace Template.Web.Areas.Example.Dashboard
         };
 
         var result = await _sharedService.Query(query);
-
         var eventsVm = result.AbsenceEvents.Select(e => new AbsenceEventViewModel {
             UserId = e.UserId,
             StartEventDate = e.StartEventDate,

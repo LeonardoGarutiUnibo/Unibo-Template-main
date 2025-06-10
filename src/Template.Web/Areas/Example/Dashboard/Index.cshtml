@@ -42,25 +42,29 @@
         border: 1px solid #ccc;
         padding: 10px;
         text-align: center;
-        position: relative; 
+        position: relative;
     }
 
     th {
         background: #0073e6;
         color: white;
+        border: 1px solid black !important;
     }
 
     td:first-child {
         font-weight: bold;
+        min-width: 150px !important;
+        max-width: 150px !important;
         background: #e3f2fd;
         position: sticky;
         left: 0;
+        border:1px solid black !important;
         z-index: 2;
     }
 
     .status {
         cursor: pointer;
-        font-size: 22px;
+        font-size: 2rem;
         transition: 0.3s;
     }
 
@@ -166,7 +170,30 @@
         top: 0;
         left: 0;
         opacity: 0.5;
-        font-size: 1.2em;
+        font-size: 1.5em;
+    }
+
+    .dayBorder{
+        border:1px solid black !important;
+    }
+    .selectButton{
+        background-color:#f0f0f0;
+        color: #0073e6;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .selectButton.up{
+        background-color: #0073e6;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-weight: bold;
     }
 
     .arrow {
@@ -174,163 +201,212 @@
         margin-left: 10px;
         transition: transform 0.3s ease;
     }
+    .today-column {
+        border: 3px solid red !important;
+        color: white !important;
+        font-weight: bold;
+        z-index: 1;
+    }
     
     .arrow.up {
         transform: rotate(180deg); /* Freccia verso l’alto */
+    }
+
+    .legenda {
+        width: 100%;
+    }
+
+    .firstColumn {
+        position: sticky;
+        left: 0;
+        z-index: 1;
+        border-right: 1px solid black !important;
+    }
+
+    .insideIcon {
+        color:black; 
+        background: #ff000000 !important; 
+        display: inline-block;
+    }
+
+    .weekend{
+        background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScvPgogIDxwYXRoIGQ9J00tMSwxIGwyLC0yCiAgICAgICAgICAgTTAsMTAgbDEwLC0xMAogICAgICAgICAgIE05LDExIGwyLC0yJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInLz4KPC9zdmc+);
+    background-repeat: repeat;
+    }
+
+    .legendaIcon {
+        font-size: 1.2rem;
+        margin-right: 5px;
     }
 </style>
 
 <div class="main-content">
     <div class="container">
-        <h1 class="mb-4">Gestione Presenze e Smart Working</h1>
+        <h1 class="mb-4"><b>Gestione Presenze e Smart Working</b></h1>
 
-        <form method="get" class="border rounded p-3 bg-light">
+        <form method="get" class="border rounded p-4 bg-light">
 
-            <div class="row mb-3 center">
-                <div class="col-md-6">
+            <div class="row mb-0 align-items-center">
+                <div class="col-md-4">
                     <label for="startMonth" class="form-label"><b>Da mese:</b></label>
                     <input type="month" id="startMonth" name="startMonth"
                            class="form-control"
                            value="@Model.StartMonth?.ToString("yyyy-MM")" />
                 </div>
 
-                <div class="col-md-6">
-                    <label for="endMonth" class="form-label"><b>A mese:<b></label>
+                <div class="col-md-4">
+                    <label for="endMonth" class="form-label"><b>A mese:</b></label>
                     <input type="month" id="endMonth" name="endMonth"
                            class="form-control"
                            value="@Model.EndMonth?.ToString("yyyy-MM")" />
                 </div>
-            </div>
-
-            <div class="text-end">
-                <button type="submit" class="btn btn-primary">Filtra</button>
+                <div class="col-md-4">
+                    <button type="submit" class="btn btn-primary">Filtra</button>
+                </div>
             </div>
         </form>
 
-        <div class="section-toggle card shadow-sm mb-3" style="margin-top:10px">
-            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="myTable" style="cursor: pointer;">
-                <span class="fs-5 fw-semibold text-primary">Il mio orario</span>
-                <span class="arrow up" style="font-size:1.5rem">⭣</span>
+        <div style="display: flex;
+    align-items: center;">
+            <div class="legenda">
+                <div class="card-header justify-content-between align-items-center toggle-table" data-target="myTable" style="cursor: pointer;">
+                    <button class="selectButton up">
+                        <span class="fs-5 fw-semibold">Il mio calendario</span>
+                        <span class="arrow up" style="font-size:1.5rem">⭣</span>
+                    </button>
+                </div>
+                @if (Model.ManagerUser.Any())
+                {
+                <div class="card-header justify-content-between align-items-center toggle-table" data-target="managerTable" style="cursor: pointer;">
+                    <button class="selectButton">
+                        <span class="fs-5 fw-semibold">Calendario del mio Manager</span>
+                        <span class="arrow" style="font-size:1.5rem">⭣</span>
+                    </button>
+                </div>
+                }
+                @if (Model.Users != null && Model.Users.Any())
+                {
+                <div class="card-header justify-content-between align-items-center toggle-table" data-target="teamTable" style="cursor: pointer;">
+                    <button class="selectButton">
+                        <span class="fs-5 fw-semibold">Il mio Team</span>
+                        <span class="arrow" style="font-size:1.5rem">⭣</span>
+                    </button>
+                </div>
+                }
+                @if (Model.IsManager && Model.TeamUsers.Count() >0)
+                {   
+                <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="myTeamTable" style="cursor: pointer;">
+                    <button class="selectButton">
+                        <span class="fs-5 fw-semibold">Tabella riservata ai manager</span>
+                        <span class="arrow" style="font-size:1.5rem">⭣</span>
+                    </button>
+                </div>
+                }
             </div>
-            <div id="myTable" class="table-wrapper" style="margin-bottom: 20px;">
-                <table class="table table-bordered table-hover table-striped align-middle">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Dipendente</th>
-                            @foreach (var day in Model.DaysInMonth)
-                            {
-                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>@Model.CurrentUserSchedule.Name</td>
-                            @foreach (var day in Model.DaysInMonth)
-                            {
-                                var date = DateTime.Parse(day);
-                                var dayOfWeek = (int)date.DayOfWeek;
-                                var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
-
-                                var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
-                                var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
-                                var StartTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].StartTime.ToString("HH:mm") : "";
-                                var EndTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EndTime.ToString("HH:mm") : "";
-                                var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
-                                var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
-
-                                bool hasEvent = !string.IsNullOrEmpty(icon);
-                                var clickableClass = hasEvent ? "disabled-cell" : "";
-                                var onclickAttr = hasEvent ? "" : "onclick=\"openPopup(this)\"";
-
-                                <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
-                                    data-user="@Model.CurrentUserSchedule.Id"
-                                    data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
-                                    data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
-                                    data-day="@date.ToString("yyyy-MM-dd")"
-                                    @Html.Raw(isEnabled && icon == ""? "onclick=\"openPopup(this)\"" : "")>
-                                    @if (isEnabled)
-                                    {   
-                                        @if (status.Contains("Mezza")){
-                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
-                                        }
-                                        else{
-                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
-                                        }
-                                        @if (state == "Pending")
-                                        {
-                                            <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
-                                        }
-                                        @if (state == "Rifiutato")
-                                        {
-                                            <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
-                                        }
-                                        @if (state == "Approvato")
-                                        {
-                                            <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
-                                        }
-                                    }
-                                </td>
-                            }
-                        </tr>
-                    </tbody>
-                </table>
+            <div display="flex" style="display: flex; flex-direction: column;width: 20%; ">
+                <div style="margin-top: 20px; display: flex; align-items: flex-start;">
+                    <h4 class="fw-semibold">Legenda<h4>
+                </div>
+                <div style="display:flex; flex-direction: column; align-items: flex-start; justify-content: space-evenly;" style="gap: 10px; flex-wrap: wrap; margin-left: 20px;">
+                    <div>
+                       <b class="legendaIcon" style="    font-size: 1.7rem;">■</b> Permesso Giorno Intero
+                    </div>
+                    <div>
+                        <b class="legendaIcon">◧</b> Permesso Mezza Giornata
+                    </div>
+                    <div>
+                       <b class="legendaIcon">𒊹</b> Ferie Giorno Intero
+                    </div>
+                    <div>
+                        <b class="legendaIcon">◐</b> Ferie Mezza Giornata
+                    </div>
+                    <div>
+                        <b class="legendaIcon">🏠︎</b> Smart Working
+                    </div>
+                </div>
             </div>
         </div>
-
-        @if (Model.ManagerUser.Any())
-        {
-        <div class="section-toggle card shadow-sm mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="managerTable" style="cursor: pointer;">
-                <span class="fs-5 fw-semibold text-primary">Il mio Manager</span>
-                <span class="arrow" style="font-size:1.5rem">⭣</span>
-            </div>
-            <div id="managerTable" class="table-wrapper" style="margin-bottom: 40px;">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Dipendente</th>
-                            @foreach (var day in Model.DaysInMonth)
-                            {
-                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
-                            }
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach (var managerUser in Model.ManagerUser)
-                        {
+            <div id="myTable">
+                <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                    Il mio calendario
+                </div>
+                <div id="table1" class="table-wrapper" style="margin-bottom: 20px;">
+                    <table >
+                        <thead>
                             <tr>
-                                <td>@managerUser.Name</td>
+                                <th class="firstColumn" style=""></th>
                                 @foreach (var day in Model.DaysInMonth)
                                 {
+                                    var today = DateTime.Today;
                                     var date = DateTime.Parse(day);
+                                    var isToday = date.Date == today;
+                                    <th id="day-@(date.ToString("yyyy-MM-dd"))" class="@(isToday ? "today-column" : "")" style="white-space: nowrap; text-align: center;">
+                                        <div>@date.ToString("dddd")</div>
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th class="firstColumn">Dipendente</th>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var today = DateTime.Today;
+                                    var date = DateTime.Parse(day);
+                                    var isToday = date.Date == today;
+                                    <th id="day-@(date.ToString("yyyy-MM-dd"))" class="@(isToday ? "today-column" : "")" style="white-space: nowrap; text-align: center;">
+                                        <div>@date.ToString("dd/MM/yyyy")</div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="dayBorder">@Model.CurrentUserSchedule.Name</td>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var today = DateTime.Today;
+                                    var date = DateTime.Parse(day);
+                                    var isToday = date.Date == today;
                                     var dayOfWeek = (int)date.DayOfWeek;
-                                    var isEnabled = (managerUser.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+                                    if (dayOfWeek == 0) {dayOfWeek =  6;}
+                                    else {dayOfWeek = dayOfWeek - 1;}
 
-                                    var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventType : "";
-                                    var state = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventState : "";
-                                    var StartTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].StartTime.ToString("HH:mm") : "";
-                                    var EndTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EndTime.ToString("HH:mm") : "";
+                                    var isEnabled = (Model.CurrentUserTimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
+                                    var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
+                                    var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
+                                    var StartTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                    var EndTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EndTime.ToString("HH:mm") : "";
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+
+
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
                                     var clickableClass = hasEvent ? "disabled-cell" : "";
-                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
-                                        data-user="@managerUser.Id"
-                                        data-StartTime="@managerUser.TimesheetStartTime"
-                                        data-EndTime="@managerUser.TimesheetEndTime"
-                                        data-day="@date.ToString("yyyy-MM-dd")">
+                                    var onclickAttr = hasEvent ? "" : "onclick=\"openPopup(this)\"";
+
+                                    <td id="cell-@(date.ToString("yyyy-MM-dd"))" class="status-cell @(isEnabled? clickableClass : "disabled-cell") dayBorder @(isToday ? "today-column" : "") @(isEnabled ? "" : "weekend")"
+                                        data-user="@Model.CurrentUserSchedule.Id"
+                                        data-StartTime="@Model.CurrentUserSchedule.TimesheetStartTime"
+                                        data-EndTime="@Model.CurrentUserSchedule.TimesheetEndTime"
+                                        data-day="@date.ToString("yyyy-MM-dd")" 
+                                        style="border: 1px solid #ccc; position: relative;"
+                                        @Html.Raw(isEnabled && icon == ""? "onclick=\"openPopup(this)\"" : "")>
                                         @if (isEnabled)
-                                        {
+                                        {   
                                             @if (status.Contains("Mezza")){
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                                <span class="status @cssClass disabled-cell insideIcon" title="@status @StartTime->@EndTime">@icon</span>
                                             }
                                             else{
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                                @if (status.Contains("Permessi")){
+                                                   <span class="status @cssClass disabled-cell insideIcon" style="font-size: 3rem; transform: translateY(-6.7px);" title="@status">@icon</span>
+                                                }
+                                                else{
+                                                    <span class="status @cssClass disabled-cell insideIcon"title="@status">@icon</span>
+                                                }
                                             }
                                             @if (state == "Pending")
                                             {
-                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                                <span class="overlay-icon" style="color:#ff5c01" title="In attesa">⌛︎</span>
                                             }
                                             @if (state == "Rifiutato")
                                             {
@@ -344,28 +420,117 @@
                                     </td>
                                 }
                             </tr>
-                        }
-                    </tbody>
-                </table>
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        
+
+        @if (Model.ManagerUser.Any())
+        {
+            <div id="managerTable" >
+                <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                    Calendario del mio Manager
+                </div>
+                <div id="table2" class="table-wrapper" style="margin-bottom: 40px;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Dipendente</th>
+                                @foreach (var day in Model.DaysInMonth)
+                                {
+                                    var today = DateTime.Today;
+                                    var date = DateTime.Parse(day);
+                                    var isToday = date.Date == today;
+                                    <th id="day-@(date.ToString("yyyy-MM-dd"))" class="@(isToday ? "today-column" : "")" style="white-space: nowrap; text-align: center;">
+                                        <div>@date.ToString("dd/MM/yyyy")</div>
+                                    </th>
+                                }
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var managerUser in Model.ManagerUser)
+                            {
+                                <tr>
+                                    <td class="dayBorder">@managerUser.Name</td>
+                                    @foreach (var day in Model.DaysInMonth)
+                                    {
+                                        var today = DateTime.Today;
+                                        var date = DateTime.Parse(day);
+                                        var dayOfWeek = (int)date.DayOfWeek;
+                                        if (dayOfWeek == 0) {dayOfWeek =  6;}
+                                        else {dayOfWeek = dayOfWeek - 1;}
+                                        var isEnabled = (managerUser.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
+
+                                        var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventType : "";
+                                        var state = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventState : "";
+                                        var isToday = date.Date == today;
+                                        var StartTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                        var EndTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EndTime.ToString("HH:mm") : "";
+                                        var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
+                                        var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
+                                        bool hasEvent = !string.IsNullOrEmpty(icon);
+                                        var clickableClass = hasEvent ? "disabled-cell" : "";
+                                        <td class="status-cell @(isEnabled? clickableClass : "disabled-cell") dayBorder @(isEnabled ? "" : "weekend") @(isToday ? "today-column" : "")"
+                                            data-user="@managerUser.Id"
+                                            data-StartTime="@managerUser.TimesheetStartTime"
+                                            data-EndTime="@managerUser.TimesheetEndTime"
+                                            data-day="@date.ToString("yyyy-MM-dd")">
+                                            @if (isEnabled)
+                                            {
+                                                @if (status.Contains("Mezza")){
+                                                    <span class="status @cssClass disabled-cell insideIcon" title="@status @StartTime->@EndTime">@icon</span>
+                                                }
+                                                else{
+                                                    @if (status.Contains("Permessi")){
+                                                       <span class="status @cssClass disabled-cell insideIcon" style="font-size: 3rem; transform: translateY(-6.7px);" title="@status">@icon</span>
+                                                    }
+                                                    else{
+                                                        <span class="status @cssClass disabled-cell insideIcon"title="@status">@icon</span>
+                                                    }
+                                                }
+                                                @if (state == "Pending")
+                                                {
+                                                    <span class="overlay-icon" style="color:#ff5c01" title="In attesa">⌛︎</span>
+                                                }
+                                                @if (state == "Rifiutato")
+                                                {
+                                                    <span class="overlay-icon" style="color:red" title="Rifiutato">✘</span>
+                                                }
+                                                @if (state == "Approvato")
+                                                {
+                                                    <span class="overlay-icon" style="color:green" title="Approvato">✔</span>
+                                                }
+                                            }
+                                        </td>
+                                    }
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         }
 
         @if (Model.Users != null && Model.Users.Any())
         {
-        <div class="section-toggle card shadow-sm mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="teamTable" style="cursor: pointer;">
-                <span class="fs-5 fw-semibold text-primary">Il mio Team</span>
-                <span class="arrow" style="font-size:1.5rem">⭣</span>
+        <div id="teamTable">
+            <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                Il mio Team
             </div>
-            <div id="teamTable" class="table-wrapper" style="margin-bottom: 40px;">
+            <div id="table3"class="table-wrapper" style="margin-bottom: 40px;">
                 <table>
                     <thead>
                         <tr>
                             <th>Dipendente</th>
                             @foreach (var day in Model.DaysInMonth)
                             {
-                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                                var today = DateTime.Today;
+                                    var date = DateTime.Parse(day);
+                                    var isToday = date.Date == today;
+                                    <th id="day-@(date.ToString("yyyy-MM-dd"))" class="@(isToday ? "today-column" : "")" style="white-space: nowrap; text-align: center;">
+                                        <div>@date.ToString("dd/MM/yyyy")</div>
+                                    </th>
                             }
                         </tr>
                     </thead>
@@ -373,15 +538,19 @@
                         @foreach (var user in Model.Users)
                         {
                             <tr>
-                                <td>@user.Name</td>
+                                <td class="dayBorder">@user.Name</td>
                                 @foreach (var day in Model.DaysInMonth)
                                 {
+                                    var today = DateTime.Today;
                                     var date = DateTime.Parse(day);
                                     var dayOfWeek = (int)date.DayOfWeek;
+                                    if (dayOfWeek == 0) {dayOfWeek =  6;}
+                                    else {dayOfWeek = dayOfWeek - 1;}
                                     var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    var isToday = date.Date == today;
                                     var StartTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].StartTime.ToString("HH:mm") : "";
                                     var EndTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].EndTime.ToString("HH:mm") : "";
 
@@ -389,7 +558,7 @@
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
                                     var clickableClass = hasEvent ? "disabled-cell" : "";
-                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
+                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell") dayBorder @(isEnabled ? "" : "weekend") @(isToday ? "today-column" : "")"
                                         data-user="@user.Id"
                                         data-StartTime="@user.TimesheetStartTime"
                                         data-EndTime="@user.TimesheetEndTime"
@@ -397,14 +566,19 @@
                                         @if (isEnabled)
                                         {
                                             @if (status.Contains("Mezza")){
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                                <span class="status @cssClass disabled-cell insideIcon" title="@status @StartTime->@EndTime">@icon</span>
                                             }
                                             else{
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                                @if (status.Contains("Permessi")){
+                                                   <span class="status @cssClass disabled-cell insideIcon" style="font-size: 3rem; transform: translateY(-6.7px);" title="@status">@icon</span>
+                                                }
+                                                else{
+                                                    <span class="status @cssClass disabled-cell insideIcon"title="@status">@icon</span>
+                                                }
                                             }
                                             @if (state == "Pending")
                                             {
-                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                                <span class="overlay-icon" style="color:#ff5c01" title="In attesa">⌛︎</span>
                                             }
                                             @if (state == "Rifiutato")
                                             {
@@ -422,23 +596,27 @@
                     </tbody>
                 </table>
             </div>
-        </div>    
+        </div>
         }
         @if (Model.IsManager && Model.TeamUsers.Count() >0)
         {
-        <div class="section-toggle card shadow-sm mb-3">
-            <div class="card-header d-flex justify-content-between align-items-center toggle-table" data-target="myTeamTable" style="cursor: pointer;">
-                <span class="fs-5 fw-semibold text-primary">Tabella riservata ai manager</span>
-                <span class="arrow" style="font-size:1.5rem">⭣</span>
+        <div id="myTeamTable">
+            <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                Tabella riservata ai manager
             </div>
-            <div id="myTeamTable" class="table-wrapper" style="margin-bottom: 40px;">
-                <table>
+            <div id="table4" class="table-wrapper" style="margin-bottom: 40px;">
+                <table id="table-container" style="overflow-x: auto; width: 100%;">
                     <thead>
                         <tr>
                             <th>Dipendente</th>
                             @foreach (var day in Model.DaysInMonth)
                             {
-                                <th>@DateTime.Parse(day).ToString("dd/MM")</th>
+                                var today = DateTime.Today;
+                                var date = DateTime.Parse(day);
+                                var isToday = date.Date == today;
+                                <th id="day-@(date.ToString("yyyy-MM-dd"))" class="@(isToday ? "today-column" : "")" style="white-space: nowrap; text-align: center;">
+                                    <div>@date.ToString("dd/MM/yyyy")</div>
+                                </th>
                             }
                         </tr>
                     </thead>
@@ -446,22 +624,27 @@
                         @foreach (var user in Model.TeamUsers)
                         {
                             <tr>
-                                <td>@user.Name</td>
+                                <td class="dayBorder">@user.Name</td>
                                 @foreach (var day in Model.DaysInMonth)
                                 {
+                                    var today = DateTime.Today;
                                     var date = DateTime.Parse(day);
                                     var dayOfWeek = (int)date.DayOfWeek;
+
+                                    if (dayOfWeek == 0) {dayOfWeek =  6;}
+                                    else {dayOfWeek = dayOfWeek - 1;}   
                                     var isEnabled = (user.TimesheetWeekDay.Split('-').Select(int.Parse).ToList()).Contains(dayOfWeek);
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    var isToday = date.Date == today;
                                     var StartTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].StartTime.ToString("HH:mm") : "";
                                     var EndTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].EndTime.ToString("HH:mm") : "";
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
                                     var clickableClass = hasEvent ? "disabled-cell" : "";
-                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell")"
+                                    <td class="status-cell @(isEnabled? clickableClass : "disabled-cell") dayBorder @(isEnabled ? "" : "weekend") @(isToday ? "today-column" : "")"
                                         data-user="@user.Id"
                                         data-StartTime="@user.TimesheetStartTime"
                                         data-EndTime="@user.TimesheetEndTime"
@@ -469,14 +652,19 @@
                                         @if (isEnabled)
                                         {
                                             @if (status.Contains("Mezza")){
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                                <span class="status @cssClass disabled-cell insideIcon" title="@status @StartTime->@EndTime">@icon</span>
                                             }
                                             else{
-                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                                @if (status.Contains("Permessi")){
+                                                   <span class="status @cssClass disabled-cell insideIcon" style="font-size: 3rem; transform: translateY(-6.7px);" title="@status">@icon</span>
+                                                }
+                                                else{
+                                                    <span class="status @cssClass disabled-cell insideIcon"title="@status">@icon</span>
+                                                }
                                             }
                                             @if (state == "Pending")
                                             {
-                                                <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
+                                                <span class="overlay-icon" style="color:#ff5c01" title="In attesa">⌛︎</span>
                                             }
                                             @if (state == "Rifiutato")
                                             {
@@ -543,48 +731,109 @@
     let currentDay = null;
     const popup = document.getElementById('popup');
 
+   document.addEventListener("DOMContentLoaded", function () {
+        const table1 = document.querySelector("#table1");
+        const table2 = document.querySelector("#table2");
+        const table3 = document.querySelector("#table3");
+        const table4 = document.querySelector("#table4");
+
+        let isSyncing1 = false;
+        let isSyncing2 = false;
+        let isSyncing3 = false;
+        let isSyncing4 = false;
+
+        if (table1 && table2 && table3 && table4) {
+            table1.addEventListener("scroll", function () {
+                if (!isSyncing1) {
+                    isSyncing2 = true;
+                    isSyncing3 = true;
+                    isSyncing4 = true;
+                    table2.scrollLeft = table1.scrollLeft;
+                    table3.scrollLeft = table1.scrollLeft;
+                    table4.scrollLeft = table1.scrollLeft;
+                }
+                isSyncing1 = false;
+            });
+            table2.addEventListener("scroll", function () {
+                if (!isSyncing2) {
+                    isSyncing1 = true;
+                    isSyncing3 = true;
+                    isSyncing4 = true;
+                    table1.scrollLeft = table2.scrollLeft;
+                    table3.scrollLeft = table2.scrollLeft;
+                    table4.scrollLeft = table2.scrollLeft;
+                }
+                isSyncing2 = false;
+            });
+            table3.addEventListener("scroll", function () {
+                if (!isSyncing3) {
+                    isSyncing1 = true;
+                    isSyncing2 = true;
+                    isSyncing4 = true;
+                    table1.scrollLeft = table3.scrollLeft;
+                    table2.scrollLeft = table3.scrollLeft;
+                    table4.scrollLeft = table3.scrollLeft;
+                }
+                isSyncing3 = false;
+            });
+            table4.addEventListener("scroll", function () {
+                if (!isSyncing4) {
+                    isSyncing1 = true;
+                    isSyncing2 = true;
+                    isSyncing3 = true;
+                    table1.scrollLeft = table4.scrollLeft;
+                    table2.scrollLeft = table4.scrollLeft;
+                    table3.scrollLeft = table4.scrollLeft;
+                }
+                isSyncing4 = false;
+            });
+        }
+    });
+
     function openPopup(cell) {
-    document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
-    cell.classList.add('selected-cell');
-    currentUserId = cell.getAttribute('data-user');
-    CurrentUserTimesheetStartTime = cell.getAttribute('data-StartTime');
-    CurrentUserTimesheetEndTime = cell.getAttribute('data-EndTime');         
-    currentDay = cell.getAttribute('data-day');                          
+        document.querySelectorAll('.status-cell').forEach(c => c.classList.remove('selected-cell'));
+        cell.classList.add('selected-cell');
+        currentUserId = cell.getAttribute('data-user');
+        CurrentUserTimesheetStartTime = cell.getAttribute('data-StartTime');
+        CurrentUserTimesheetEndTime = cell.getAttribute('data-EndTime');         
+        currentDay = cell.getAttribute('data-day');                          
 
-    const rect = cell.getBoundingClientRect();
-    popup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
-    popup.style.left = (window.scrollX + rect.left) + 'px';
+        const rect = cell.getBoundingClientRect();
+        popup.style.top = (window.scrollY + rect.bottom + 5) + 'px';
+        popup.style.left = (window.scrollX + rect.left) + 'px';
 
-    const dayISO = currentDay;
-    const defaultStart = dayISO + "T" + CurrentUserTimesheetStartTime;
-    const defaultEnd = dayISO + "T" + CurrentUserTimesheetEndTime;
+        const dayISO = currentDay;
+        const defaultStart = dayISO + "T" + CurrentUserTimesheetStartTime;
+        const defaultEnd = dayISO + "T" + CurrentUserTimesheetEndTime;
 
-    const startInput = document.getElementById('startDateTime');
-    const endInput = document.getElementById('endDateTime');
-
-    startInput.value = defaultStart;
-    startInput.min = defaultStart;   
-    endInput.value = defaultEnd;
-    endInput.min = defaultStart;   
-
-    document.getElementById('eventType').value = '';
-
-    updateTimeFields();
-
-    popup.style.display = 'block';
-}
-
-document.getElementById('startDateTime').addEventListener('input', function() {
-    const startVal = this.value;
-    const endInput = document.getElementById('endDateTime');
-    if (endInput.value < startVal) {
-        endInput.value = startVal;
-    }
-    endInput.min = startVal;
-});
-    function updateTimeFields() {
         const startInput = document.getElementById('startDateTime');
         const endInput = document.getElementById('endDateTime');
+
+        startInput.value = defaultStart;
+        startInput.min = defaultStart;   
+        endInput.value = defaultEnd;
+        endInput.min = defaultStart;   
+
+        document.getElementById('eventType').value = '';
+
+        updateTimeFields(CurrentUserTimesheetStartTime, CurrentUserTimesheetEndTime);
+
+        popup.style.display = 'block';
+    }
+
+    document.getElementById('startDateTime').addEventListener('input', function() {
+        const startVal = this.value;
+        const endInput = document.getElementById('endDateTime');
+        if (endInput.value < startVal) {
+            endInput.value = startVal;
+        }
+        endInput.min = startVal;
+    });
+
+    function updateTimeFields(CurrentUserTimesheetStartTime, CurrentUserTimesheetEndTime) {
+        const startInput = document.getElementById('startDateTime');
+        const endInput = document.getElementById('endDateTime');
+        
 
         const startDate = startInput.value.substring(0, 10);
         const endDate = endInput.value.substring(0, 10);
@@ -596,8 +845,10 @@ document.getElementById('startDateTime').addEventListener('input', function() {
             startInput.disabled = false;
             endInput.disabled = false;
 
-            const newStart = startDate + 'T09:00';
-            const newEnd = endDate + 'T17:00';
+            const newStart = startDate + 'T'+CurrentUserTimesheetStartTime.substring(0, 5);
+
+            const newEnd = endDate + 'T'+CurrentUserTimesheetEndTime.substring(0, 5);
+
             startInput.value = newStart;
             endInput.value = newEnd;
 
@@ -780,15 +1031,18 @@ document.getElementById('startDateTime').addEventListener('input', function() {
         header.addEventListener('click', function () {
             const targetId = this.dataset.target;
             const target = document.getElementById(targetId);
+            const selectButton = this.querySelector('.selectButton');
             const arrow = this.querySelector('.arrow');
             const isVisible = target.style.display !== 'none';
 
             if (isVisible) {
                 target.style.display = 'none';
                 arrow.classList.remove('up');
+                selectButton.classList.remove('up');
             } else {
                 target.style.display = 'block';
                 arrow.classList.add('up');
+                selectButton.classList.add('up');
             }
         });
     });
