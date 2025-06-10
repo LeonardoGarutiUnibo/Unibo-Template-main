@@ -736,57 +736,29 @@
         const table2 = document.querySelector("#table2");
         const table3 = document.querySelector("#table3");
         const table4 = document.querySelector("#table4");
-
         let isSyncing1 = false;
         let isSyncing2 = false;
         let isSyncing3 = false;
         let isSyncing4 = false;
-
-        if (table1 && table2 && table3 && table4) {
-            table1.addEventListener("scroll", function () {
-                if (!isSyncing1) {
-                    isSyncing2 = true;
-                    isSyncing3 = true;
-                    isSyncing4 = true;
-                    table2.scrollLeft = table1.scrollLeft;
-                    table3.scrollLeft = table1.scrollLeft;
-                    table4.scrollLeft = table1.scrollLeft;
+        var arr = []
+        for (let i = 1; i <= 4; i++) {
+            const table = eval("table" + i);
+            if (table) {
+                arr.push(i);
+            }
+        }
+        console.log(arr.length)
+        for (let i = 0; i < arr.length; i++) {
+            eval("table" + arr[i]).addEventListener("scroll", function () {
+                if (eval("!isSyncing"+arr[i])) {
+                    for (let j = 0; j < arr.length; j++) {
+                        if (i === j) continue;
+                        eval("isSyncing"+arr[j]+"= true");
+                        eval("table"+arr[j]+".scrollLeft = table"+arr[i]+".scrollLeft");
+                    }
                 }
-                isSyncing1 = false;
-            });
-            table2.addEventListener("scroll", function () {
-                if (!isSyncing2) {
-                    isSyncing1 = true;
-                    isSyncing3 = true;
-                    isSyncing4 = true;
-                    table1.scrollLeft = table2.scrollLeft;
-                    table3.scrollLeft = table2.scrollLeft;
-                    table4.scrollLeft = table2.scrollLeft;
-                }
-                isSyncing2 = false;
-            });
-            table3.addEventListener("scroll", function () {
-                if (!isSyncing3) {
-                    isSyncing1 = true;
-                    isSyncing2 = true;
-                    isSyncing4 = true;
-                    table1.scrollLeft = table3.scrollLeft;
-                    table2.scrollLeft = table3.scrollLeft;
-                    table4.scrollLeft = table3.scrollLeft;
-                }
-                isSyncing3 = false;
-            });
-            table4.addEventListener("scroll", function () {
-                if (!isSyncing4) {
-                    isSyncing1 = true;
-                    isSyncing2 = true;
-                    isSyncing3 = true;
-                    table1.scrollLeft = table4.scrollLeft;
-                    table2.scrollLeft = table4.scrollLeft;
-                    table3.scrollLeft = table4.scrollLeft;
-                }
-                isSyncing4 = false;
-            });
+                eval("isSyncing"+arr[i] + "= false");
+            });             
         }
     });
 
