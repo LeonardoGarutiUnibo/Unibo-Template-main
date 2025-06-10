@@ -215,7 +215,9 @@ namespace Template.Web.Areas.Example.Dashboard
                 userSchedule.Schedule[key] = new EventInfo
                 {
                     EventType = evt.EventType,
-                    EventState = evt.EventState
+                    EventState = evt.EventState,
+                    StartTime = evt.StartEventDate,
+                    EndTime = evt.EndEventDate,
                 };
                 currentDate = currentDate.AddDays(1);
             }
@@ -237,7 +239,9 @@ namespace Template.Web.Areas.Example.Dashboard
                 managerSchedule.Schedule[key] = new EventInfo
                 {
                     EventType = evt.EventType,
-                    EventState = evt.EventState
+                    EventState = evt.EventState,
+                    StartTime = evt.StartEventDate,
+                    EndTime = evt.EndEventDate,
                 };
                 currentDate = currentDate.AddDays(1);
             }

@@ -90,5 +90,7 @@ namespace Template.Web.Areas.Example.Dashboard
     {
         public string EventType { get; set; }
         public string EventState { get; set; }
+        public DateTime StartTime { get; set; }
+        public DateTime EndTime { get; set; }
     }
 }

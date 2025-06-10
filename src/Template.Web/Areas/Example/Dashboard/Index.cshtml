@@ -234,7 +234,8 @@
 
                                 var status = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventType : "";
                                 var state = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EventState : "";
-
+                                var StartTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                var EndTime = Model.CurrentUserSchedule.Schedule.ContainsKey(day) ? Model.CurrentUserSchedule.Schedule[day].EndTime.ToString("HH:mm") : "";
                                 var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                 var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
 
@@ -249,8 +250,13 @@
                                     data-day="@date.ToString("yyyy-MM-dd")"
                                     @Html.Raw(isEnabled && icon == ""? "onclick=\"openPopup(this)\"" : "")>
                                     @if (isEnabled)
-                                    {
-                                        <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                    {   
+                                        @if (status.Contains("Mezza")){
+                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                        }
+                                        else{
+                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                        }
                                         @if (state == "Pending")
                                         {
                                             <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
@@ -303,6 +309,8 @@
 
                                     var status = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventType : "";
                                     var state = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EventState : "";
+                                    var StartTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                    var EndTime = managerUser.Schedule.ContainsKey(day) ? managerUser.Schedule[day].EndTime.ToString("HH:mm") : "";
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -314,7 +322,12 @@
                                         data-day="@date.ToString("yyyy-MM-dd")">
                                         @if (isEnabled)
                                         {
-                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (status.Contains("Mezza")){
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                            }
+                                            else{
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            }
                                             @if (state == "Pending")
                                             {
                                                 <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
@@ -369,6 +382,9 @@
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    var StartTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                    var EndTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].EndTime.ToString("HH:mm") : "";
+
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -380,7 +396,12 @@
                                         data-day="@date.ToString("yyyy-MM-dd")">
                                         @if (isEnabled)
                                         {
-                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (status.Contains("Mezza")){
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                            }
+                                            else{
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            }
                                             @if (state == "Pending")
                                             {
                                                 <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
@@ -434,6 +455,8 @@
 
                                     var status = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventType : "";
                                     var state = user.Schedule.ContainsKey(day) ? user.Schedule[day].EventState : "";
+                                    var StartTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].StartTime.ToString("HH:mm") : "";
+                                    var EndTime = user.Schedule.ContainsKey(day) ? user.Schedule[day].EndTime.ToString("HH:mm") : "";
                                     var icon = isEnabled ? Model.StatusIcons.GetValueOrDefault(status, "") : "";
                                     var cssClass = isEnabled ? Model.StatusClasses.GetValueOrDefault(status, "") : "";
                                     bool hasEvent = !string.IsNullOrEmpty(icon);
@@ -445,7 +468,12 @@
                                         data-day="@date.ToString("yyyy-MM-dd")">
                                         @if (isEnabled)
                                         {
-                                            <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            @if (status.Contains("Mezza")){
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status @StartTime->@EndTime">@icon</span>
+                                            }
+                                            else{
+                                                <span class="status @cssClass disabled-cell" style="color:black" title="@status">@icon</span>
+                                            }
                                             @if (state == "Pending")
                                             {
                                                 <span class="overlay-icon" style="color:orange" title="In attesa">⌛︎</span>
