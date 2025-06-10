@@ -46,11 +46,9 @@ namespace Template.Web.Areas.Example.Requests
 
             if (usersInfo == null || !usersInfo.Any())
             {
-                Console.WriteLine("Ancora nessun membro nel Team");
                 return View(model);
             }
 
-            Console.WriteLine("Membri del team trovati " + usersInfo.Count);
 
             var userIds = usersInfo.Select(x => x.UserId).ToList();
 
@@ -61,7 +59,6 @@ namespace Template.Web.Areas.Example.Requests
                 UserId = userIds
             });
 
-            Console.WriteLine(userIds + " " + absencesResult.Count);
 
             model.Absences = absencesResult.AbsenceEvents.Select(a => new AbsenceEventViewModel {
                 Id = a.Id,

@@ -118,12 +118,6 @@ namespace Template.Web.Areas.Example.TeamMembers
             model.TeamsWithUserCount = teamsDto.Teams.Select(team =>
             {
                 var managers = teamMembersDto.TeamMembers.Where(tm => tm.IsManager).ToList();
-                Console.WriteLine($"Manager totali: {managers.Count}");
-                foreach(var m in managers)
-                {
-                    Console.WriteLine($"TeamId: {m.TeamId}, UserId: {m.UserId}");
-                }
-            
                 var managerMember = teamMembersDto.TeamMembers
                     .FirstOrDefault(tm => tm.TeamId == team.Id && tm.IsManager);
 
@@ -131,7 +125,6 @@ namespace Template.Web.Areas.Example.TeamMembers
                 if (managerMember != null)
                 {
                     var managerUser = model.Users.FirstOrDefault(u => u.Id == managerMember.UserId);
-                    Console.WriteLine(managerUser.FirstName);
                     if (managerUser != null)
                     {
                         managerName = $"{managerUser.FirstName} {managerUser.LastName}";

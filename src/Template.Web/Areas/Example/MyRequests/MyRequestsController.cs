@@ -46,15 +46,12 @@ namespace Template.Web.Areas.Example.MyRequests
         [HttpPost]
         public virtual async Task<IActionResult> Delete([FromBody] DeleteRequestModel model)
         {
-            Console.WriteLine("Dentro a Delete");
             var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
 
             if (model == null || model.Id == Guid.Empty)
                 return BadRequest("ID non valido.");
 
-            Console.WriteLine("Prima della Delete");
             var success = await _sharedService.DeleteAbsenceEventAsync(model.Id);
-            Console.WriteLine("Dopo la Delete");
 
             if (success)
                 return Ok();

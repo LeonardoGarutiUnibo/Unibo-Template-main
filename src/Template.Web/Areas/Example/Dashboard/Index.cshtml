@@ -24,7 +24,7 @@
     }
 
     .container {
-        max-width: 80%;
+        max-width: 85%;
         margin: auto;
         background: #fff;
         padding: 20px;
@@ -233,6 +233,16 @@
         background-image: url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0naHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmcnIHdpZHRoPScxMCcgaGVpZ2h0PScxMCc+CiAgPHJlY3Qgd2lkdGg9JzEwJyBoZWlnaHQ9JzEwJyBmaWxsPSd3aGl0ZScvPgogIDxwYXRoIGQ9J00tMSwxIGwyLC0yCiAgICAgICAgICAgTTAsMTAgbDEwLC0xMAogICAgICAgICAgIE05LDExIGwyLC0yJyBzdHJva2U9J2JsYWNrJyBzdHJva2Utd2lkdGg9JzInLz4KPC9zdmc+);
     background-repeat: repeat;
     }
+    .tableTitle {
+        font-weight: bold;
+        font-size: 1.5rem;
+        position: sticky;
+        top: 0;
+        background: white;
+        z-index: 1;
+        border-top: 1px solid #ccc;
+        letter-spacing: 0.4px;
+    }
 
     .legendaIcon {
         font-size: 1.2rem;
@@ -278,7 +288,7 @@
                 @if (Model.ManagerUser.Any())
                 {
                 <div class="card-header justify-content-between align-items-center toggle-table" data-target="managerTable" style="cursor: pointer;">
-                    <button class="selectButton">
+                    <button class="selectButton" >
                         <span class="fs-5 fw-semibold">Calendario del mio Manager</span>
                         <span class="arrow" style="font-size:1.5rem">⭣</span>
                     </button>
@@ -327,7 +337,7 @@
             </div>
         </div>
             <div id="myTable">
-                <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                <div class="tableTitle">
                     Il mio calendario
                 </div>
                 <div id="table1" class="table-wrapper" style="margin-bottom: 20px;">
@@ -429,7 +439,7 @@
         @if (Model.ManagerUser.Any())
         {
             <div id="managerTable" >
-                <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+                <div class="tableTitle">
                     Calendario del mio Manager
                 </div>
                 <div id="table2" class="table-wrapper" style="margin-bottom: 40px;">
@@ -515,7 +525,7 @@
         @if (Model.Users != null && Model.Users.Any())
         {
         <div id="teamTable">
-            <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+            <div class="tableTitle">
                 Il mio Team
             </div>
             <div id="table3"class="table-wrapper" style="margin-bottom: 40px;">
@@ -601,7 +611,7 @@
         @if (Model.IsManager && Model.TeamUsers.Count() >0)
         {
         <div id="myTeamTable">
-            <div style="margin-top:20px; font-weight: bold; font-size: 1.2rem; position: sticky; top: 0; background: white; z-index: 1;">
+            <div class="tableTitle">
                 Tabella riservata ai manager
             </div>
             <div id="table4" class="table-wrapper" style="margin-bottom: 40px;">
