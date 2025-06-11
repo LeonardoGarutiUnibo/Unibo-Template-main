@@ -17,8 +17,13 @@
         .fixed-overlay.active {
             display: block;
         }
+        .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            width: calc(100% - 270px);
+        }
     </style>
-
+<div class="main-content">
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Gestione Utenti dei Team</h2>
 
@@ -182,7 +187,7 @@
         </div>
       </div>
     </div>
-
+</div>
 <script>
     let selectedTeamIdForManager = null;
     let sortDirection = {};

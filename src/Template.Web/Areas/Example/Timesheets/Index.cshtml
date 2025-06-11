@@ -1,5 +1,5 @@
 @using SystemTextJson = System.Text.Json.JsonSerializer
-
+<div class="main-content">
     <div class="container mt-5">
         <h2 class="mb-4 text-center">Gestione Timesheet</h2>
 
@@ -176,7 +176,7 @@
         </div>
       </div>
     </div>
-
+</div>
     <script>
         function showSearchForm() {
             document.getElementById("searchModal").style.display = "block";
@@ -262,3 +262,11 @@
             });
         }
     </script>
+
+    <style>
+    .main-content {
+            margin-left: 270px;
+            padding: 20px;
+            width: calc(100% - 270px);
+        }
+    </style>
