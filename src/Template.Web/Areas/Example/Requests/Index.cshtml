@@ -4,9 +4,16 @@
         <h2 class="mb-4 text-center">Gestione Richieste</h2>
 
         <div class="d-flex justify-content-center gap-3 mb-4">
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#searchModal">
+            <button class="btn btn-info" onclick="showSearchForm()">
                 <i class="bi bi-search"></i> Ricerca Utenti
             </button>
+        </div>
+
+        <div class="mb-3" id="searchModal" style="display:none;">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="Cerca per nome..." onkeyup="filterUsers()" />
+                <button class="btn btn-outline-secondary" onclick="hideSearchForm()">Chiudi</button>
+            </div>
         </div>
 
         <table class="table table-bordered table-striped table-hover align-middle">
@@ -66,29 +73,29 @@
             </tbody>
         </table>
     </div>
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="searchModalLabel">Ricerca Utente</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Nome utente" onkeyup="filterUsers()" autofocus />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                </div>
-            </div>
-        </div>
-    </div>
 <script>
+    function showSearchForm() {
+        document.getElementById("searchModal").style.display = "block";
+    }
+    function hideSearchForm() {
+        const rows = document.querySelectorAll("tbody tr");
+        rows.forEach(row => row.style.display = "");
+        document.getElementById("searchModal").style.display = "none";
+    }
     function filterUsers() {
         const input = document.getElementById("searchInput").value.toLowerCase();
         const rows = document.querySelectorAll("tbody tr");
+
         rows.forEach(row => {
             const name = row.cells[0].textContent.toLowerCase();
-            row.style.display = name.includes(input) ? "" : "none";
+            const requestDate = row.cells[1].textContent.toLowerCase();
+            const eventType = row.cells[4].textContent.toLowerCase();  // qui ora è corretto
+
+            let match = name.includes(input) || 
+                        requestDate.includes(input) || 
+                        eventType.includes(input);
+
+            row.style.display = match ? "" : "none";
         });
     }
 

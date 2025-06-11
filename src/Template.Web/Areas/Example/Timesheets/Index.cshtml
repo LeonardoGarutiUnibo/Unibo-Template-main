@@ -7,9 +7,16 @@
             <button class="btn btn-success" data-bs-toggle="modal" data-bs-target="#timesheetModal">
                 <i class="bi bi-plus-lg"></i> Nuovo Timesheet
             </button>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#searchModal">
+            <button class="btn btn-info"  onclick="showSearchForm()">
                 <i class="bi bi-search"></i> Ricerca Timesheet
             </button>
+        </div>
+
+        <div class="mb-3" id="searchModal" style="display:none;">
+            <div class="input-group">
+                <input type="text" class="form-control" id="searchInput" placeholder="Cerca per nome..." onkeyup="filterUsers()" />
+                <button class="btn btn-outline-secondary" onclick="hideSearchForm()">Chiudi</button>
+            </div>
         </div>
 
         <table class="table table-bordered table-striped table-hover align-middle">
@@ -170,24 +177,16 @@
       </div>
     </div>
 
-    <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content p-3">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="searchModalLabel">Ricerca Timesheet</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Chiudi"></button>
-                </div>
-                <div class="modal-body">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Nome timesheet" onkeyup="filterUsers()" autofocus />
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Chiudi</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <script>
+        function showSearchForm() {
+            document.getElementById("searchModal").style.display = "block";
+        }
+        function hideSearchForm() {
+            const rows = document.querySelectorAll("tbody tr");
+            rows.forEach(row => row.style.display = "");
+            document.getElementById("searchModal").style.display = "none";
+        }
+
         function handleEditClick(button) {
             const id = button.getAttribute('data-id');
             const name = button.getAttribute('data-name');

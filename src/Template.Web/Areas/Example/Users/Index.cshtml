@@ -188,6 +188,8 @@
         }
 
         function hideSearchForm() {
+            const rows = document.querySelectorAll("tbody tr");
+            rows.forEach(row => row.style.display = "");    
             document.getElementById("searchUserForm").style.display = "none";
         }
 
@@ -197,7 +199,18 @@
 
             rows.forEach(row => {
                 let userName = row.cells[0].textContent.toLowerCase();
-                row.style.display = userName.includes(input) ? "" : "none";
+                let userSurname = row.cells[1].textContent.toLowerCase();
+                let userNickname = row.cells[2].textContent.toLowerCase();
+                let userEmail = row.cells[3].textContent.toLowerCase();
+                let userRole = row.cells[4].textContent.toLowerCase();
+
+                let match = userName.includes(input) || 
+                            userSurname.includes(input) || 
+                            userNickname.includes(input) || 
+                            userEmail.includes(input) || 
+                            userRole.includes(input);
+
+                row.style.display = match ? "" : "none";
             });
         }
     </script>
