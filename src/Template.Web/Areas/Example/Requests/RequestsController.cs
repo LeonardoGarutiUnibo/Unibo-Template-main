@@ -8,7 +8,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Security.Claims;
-using Template.Services.Shared;
 
 namespace Template.Web.Areas.Example.Requests
 {

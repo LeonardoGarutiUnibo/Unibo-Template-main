@@ -363,14 +363,5 @@ namespace Template.Web.Areas.Example.TeamMembers
             return RedirectToAction(Actions.Edit(model.Id));
         }
 
-        [HttpPost]
-        public virtual async Task<IActionResult> Delete(Guid id)
-        {
-            // Query to delete user
-
-            Alerts.AddSuccess(this, "Utente cancellato");
-
-            return RedirectToAction(Actions.Index());
-        }
     }
 }

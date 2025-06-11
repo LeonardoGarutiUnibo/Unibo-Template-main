@@ -8,6 +8,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using System.Threading.Tasks;
 using System.Security.Claims;
+using Template.Web.SignalR;
+using Template.Web.SignalR.Hubs.Events;
+using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.Extensions.Localization;
 
 namespace Template.Web.Areas.Example.Dashboard
 {
@@ -15,10 +19,16 @@ namespace Template.Web.Areas.Example.Dashboard
     public partial class DashboardController : AuthenticatedBaseController
     {
         private readonly SharedService _sharedService;
+        private readonly IPublishDomainEvents _publisher;
+        private readonly IStringLocalizer<SharedResource> _sharedLocalizer;
 
-        public DashboardController(SharedService sharedService)
+        public DashboardController(SharedService sharedService, IPublishDomainEvents publisher, IStringLocalizer<SharedResource> sharedLocalizer)
         {
             _sharedService = sharedService;
+            _publisher = publisher;
+            _sharedLocalizer = sharedLocalizer;
+            ModelUnbinderHelpers.ModelUnbinders.Add(typeof(PresenzeViewModel), new SimplePropertyModelUnbinder());
+
         }
 
         [HttpGet]
