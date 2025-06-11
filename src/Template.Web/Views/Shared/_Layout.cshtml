@@ -36,6 +36,10 @@
 .sidebar a:hover {
     background: rgba(255, 255, 255, 0.2);
 }
+.active-link {
+    background-color: rgba(255, 255, 255, 0.3);
+    font-weight: bold;
+}
 
     </style>
 }
@@ -72,13 +76,13 @@
                     <img class="onit-suites-logo" src="~/images/app-logo.png" />
                 </a>
                 @if (identitaCorrente.Role == "Admin"){
-                    <a asp-area="Example" asp-controller="Users" asp-action="Index" style="display: flex; justify-content: center;">Gestione utenti</a>
-                    <a asp-area="Example" asp-controller="Teams" asp-action="Index" style="display: flex; justify-content: center;">Gestione team</a>
-                    <a asp-area="Example" asp-controller="Timesheets" asp-action="Index" style="display: flex; justify-content: center;">Gestione time</a>
-                    <a asp-area="Example" asp-controller="TeamMembers" asp-action="Index" style="display: flex; justify-content: center;">Gestione Utenti Team</a>
+                    <a asp-area="Example" asp-controller="Users" asp-action="Index" class="@(IsActive("Users", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Gestione Utenti</a>
+                    <a asp-area="Example" asp-controller="Teams" asp-action="Index" class="@(IsActive("Teams", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Gestione Team</a>
+                    <a asp-area="Example" asp-controller="Timesheets" asp-action="Index" class="@(IsActive("Timesheets", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Gestione Timesheet</a>
+                    <a asp-area="Example" asp-controller="TeamMembers" asp-action="Index" class="@(IsActive("TeamMembers", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Gestione Utenti e Team</a>
                 }
-                <a asp-area="Example" asp-controller="MyRequests" asp-action="Index" style="display: flex; justify-content: center;">Le mie richieste</a>
-                <a asp-area="Example" asp-controller="Requests" asp-action="Index" style="display: flex; justify-content: center;">Gestione Richieste</a>
+                <a asp-area="Example" asp-controller="MyRequests" asp-action="Index" class="@(IsActive("MyRequests", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Le mie richieste</a>
+                <a asp-area="Example" asp-controller="Requests" asp-action="Index" class="@(IsActive("Requests", "Index") ? "active-link" : "")" style="display: flex; justify-content: center;">Gestione Richieste Team</a>
             </div>
         }
         @RenderSection("pageTitle", false)
@@ -101,4 +105,19 @@
     </script>
 
     @RenderSection("scripts", false)
+}
+
+@functions {
+    bool IsActive(string controller, string action = null)
+    {
+        var routeData = ViewContext.RouteData;
+        var currentController = routeData.Values["controller"]?.ToString();
+        var currentAction = routeData.Values["action"]?.ToString();
+
+        if (action == null)
+            return string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase);
+        else
+            return string.Equals(controller, currentController, StringComparison.OrdinalIgnoreCase) &&
+                   string.Equals(action, currentAction, StringComparison.OrdinalIgnoreCase);
+    }
 }
