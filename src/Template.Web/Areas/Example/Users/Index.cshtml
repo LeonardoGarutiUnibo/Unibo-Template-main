@@ -57,7 +57,8 @@
                                             '@user.LastName',
                                             '@user.NickName',
                                             '@user.Email',
-                                            '@user.Role'
+                                            '@user.Role',
+                                            '@user.TimesheetId'
                                         )">
                                     <i class="bi bi-pencil"></i> Modifica
                                 </button>
@@ -149,6 +150,7 @@
             document.getElementById("nickName").value = "";
             document.getElementById("email").value = "";
             document.getElementById("password").value = "";
+            document.getElementById("timesheetId").value = "";
             document.getElementById("passwordGroup").style.display = "block";
             document.getElementById("isAdmin").checked = false;
             document.getElementById("roleField").value = "User";
@@ -156,7 +158,7 @@
             userModal.show();
         }
 
-        function editUser(id, firstName, lastName, nickName, email, role) {
+        function editUser(id, firstName, lastName, nickName, email, role, timesheetId) {
             document.getElementById("userModalLabel").textContent = "Modifica Utente";
 
             document.getElementById("userId").value = id;
@@ -164,6 +166,7 @@
             document.getElementById("lastName").value = lastName;
             document.getElementById("nickName").value = nickName;
             document.getElementById("email").value = email;
+            document.getElementById("timesheetId").value = timesheetId;
 
             document.getElementById("passwordGroup").style.display = "none";
             document.getElementById("password").value = "";
