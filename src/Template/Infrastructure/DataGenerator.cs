@@ -256,15 +256,6 @@ namespace Template.Infrastructure
                     EventState = "Approvato"
                 },
                 new AbsenceEvent{
-                    Id = Guid.Parse("afeaf056-cad4-442b-a726-185b3f6194c9"),
-                    UserId = Guid.Parse("fa18d9ce-3cd9-4d55-82e9-1a19494f174b"),
-                    RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
-                    StartEventDate = DateTime.Parse("2025-06-25 19:33:27"),
-                    EndEventDate = DateTime.Parse("2025-06-27 00:18:27"),
-                    EventType = "smartworking",
-                    EventState = "Rifiutato"
-                },
-                new AbsenceEvent{
                     Id = Guid.Parse("f85fee12-067b-41dd-9cc2-eee65e25f5ed"),
                     UserId = Guid.Parse("fa18d9ce-3cd9-4d55-82e9-1a19494f174b"),
                     RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
@@ -463,15 +454,6 @@ namespace Template.Infrastructure
                     EventState = "Rifiutato"
                 },
                 new AbsenceEvent{
-                    Id = Guid.Parse("bf47a488-8e0b-4a1e-8ff2-441eacabc602"),
-                    UserId = Guid.Parse("ef74c64d-1d1b-440e-8df2-3432b690ff5d"),
-                    RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
-                    StartEventDate = DateTime.Parse("2025-06-27 01:14:13"),
-                    EndEventDate = DateTime.Parse("2025-06-28 23:59:13"),
-                    EventType = "smartworking",
-                    EventState = "Rifiutato"
-                },
-                new AbsenceEvent{
                     Id = Guid.Parse("a6b3591b-7c5a-4d82-9558-f810ae4b0177"),
                     UserId = Guid.Parse("ef74c64d-1d1b-440e-8df2-3432b690ff5d"),
                     RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
@@ -488,15 +470,6 @@ namespace Template.Infrastructure
                     EndEventDate = DateTime.Parse("2025-06-04 23:01:43"),
                     EventType = "Ferie Intera",
                     EventState = "Pending"
-                },
-                new AbsenceEvent{
-                    Id = Guid.Parse("eeaa4440-31f8-4468-8e1f-7a4352c561a5"),
-                    UserId = Guid.Parse("621ef3b7-df3d-47f6-8905-9490fd47be44"),
-                    RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
-                    StartEventDate = DateTime.Parse("2025-06-28 01:46:26"),
-                    EndEventDate = DateTime.Parse("2025-06-28 04:58:26"),
-                    EventType = "Permessi Mezza",
-                    EventState = "Approvato"
                 },
                 new AbsenceEvent{
                     Id = Guid.Parse("a3a2327d-0071-4059-8873-ede184ac38bc"),
@@ -679,15 +652,6 @@ namespace Template.Infrastructure
                     EventState = "Approvato"
                 },
                 new AbsenceEvent{
-                    Id = Guid.Parse("ee54f8b7-3686-4c20-b3f2-bd3a780a3eb2"),
-                    UserId = Guid.Parse("0f51e242-c419-4ee9-9a9f-38b7e41b76f1"),
-                    RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
-                    StartEventDate = DateTime.Parse("2025-06-10 00:52:41"),
-                    EndEventDate = DateTime.Parse("2025-06-11 21:44:41"),
-                    EventType = "smartworking",
-                    EventState = "Pending"
-                },
-                new AbsenceEvent{
                     Id = Guid.Parse("158f6569-89d3-4c43-911d-be00dfd7381e"),
                     UserId = Guid.Parse("0f51e242-c419-4ee9-9a9f-38b7e41b76f1"),
                     RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
@@ -830,15 +794,6 @@ namespace Template.Infrastructure
                     EndEventDate = DateTime.Parse("2025-06-25 02:17:09"),
                     EventType = "Ferie Intera",
                     EventState = "Pending"
-                },
-                new AbsenceEvent{
-                    Id = Guid.Parse("074400bb-e544-4df3-8aac-9a619d1ed456"),
-                    UserId = Guid.Parse("7baf7af2-4d4c-4d41-acc3-8e867167f879"),
-                    RequestDate = DateTime.Parse("2025-06-09 02:59:41"),
-                    StartEventDate = DateTime.Parse("2025-06-25 13:59:16"),
-                    EndEventDate = DateTime.Parse("2025-06-27 09:45:16"),
-                    EventType = "Permessi Mezza",
-                    EventState = "Approvato"
                 },
                 new AbsenceEvent{
                     Id = Guid.Parse("2f554861-517a-4284-bc5a-6d2861b47212"),
